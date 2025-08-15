@@ -10,9 +10,20 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
-import type { BreadcrumbItem, NavItem } from '@/types';
+import type { BreadcrumbItem, NavItem, User } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
+import {
+    BookOpen,
+    Folder,
+    LayoutGrid,
+    Menu,
+    Search,
+    PackageIcon,
+    TagIcon,
+    ShoppingCartIcon,
+    BarChart3Icon,
+    TrendingUpIcon
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -24,7 +35,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const page = usePage();
-const auth = computed(() => page.props.auth);
+const auth = computed(() => page.props.auth as { user: User });
 
 const isCurrentRoute = computed(() => (url: string) => page.url === url);
 
@@ -37,6 +48,31 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'POS',
+        href: route('transactions.pos'),
+        icon: ShoppingCartIcon,
+    },
+    {
+        title: 'Kategori',
+        href: route('categories.index'),
+        icon: TagIcon,
+    },
+    {
+        title: 'Produk',
+        href: route('products.index'),
+        icon: PackageIcon,
+    },
+    {
+        title: 'Transaksi',
+        href: route('transactions.index'),
+        icon: BarChart3Icon,
+    },
+    {
+        title: 'Stok',
+        href: route('stock.overview'),
+        icon: TrendingUpIcon,
     },
 ];
 

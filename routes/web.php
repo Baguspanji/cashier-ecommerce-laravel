@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('products.toggle-status');
 
     // Transactions
-    Route::get('pos', [TransactionController::class, 'pos'])->name('pos');
+    Route::get('transactions/pos', [TransactionController::class, 'pos'])->name('transactions.pos');
     Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show']);
     Route::get('transactions/daily-report', [TransactionController::class, 'dailyReport'])
         ->name('transactions.daily-report');
