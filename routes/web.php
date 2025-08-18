@@ -12,9 +12,10 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    // Route::get('dashboard', function () {
+    //     return Inertia::render('Dashboard');
+    // })->name('dashboard');
+    Route::get('dashboard', [TransactionController::class, 'pos'])->name('dashboard');
 
     // Categories
     Route::resource('categories', CategoryController::class);
@@ -25,7 +26,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('products.toggle-status');
 
     // Transactions
-    Route::get('transactions/pos', [TransactionController::class, 'pos'])->name('transactions.pos');
     Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show']);
     Route::get('transactions/daily-report', [TransactionController::class, 'dailyReport'])
         ->name('transactions.daily-report');

@@ -2,9 +2,10 @@
 import { ref, watch } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import AppPageHeader from '@/components/AppPageHeader.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
     Select,
@@ -37,7 +38,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { visitCreate } = useStock()
+const { visitCreate, visitIndex } = useStock()
 
 // State management
 const search = ref(props.filters.search || '')
@@ -54,13 +55,8 @@ watch([search, product, type, date], ([searchValue, productValue, typeValue, dat
     if (typeValue && typeValue !== 'all') filters.type = typeValue as any
     if (dateValue) filters.date = dateValue
 
-    // Apply filters with 300ms debounce
-    setTimeout(() => {
-        if (Object.keys(filters).length > 0) {
-            // Apply filters logic here
-        }
-    }, 300)
-}, { immediate: false })
+    visitIndex(filters)
+})
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('id-ID', {
@@ -83,9 +79,9 @@ const getMovementTypeIcon = (type: string) => {
 
 const getMovementTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-        'in': 'Stock In',
-        'out': 'Stock Out',
-        'adjustment': 'Adjustment'
+        'in': 'Masuk',
+        'out': 'Keluar',
+        'adjustment': 'Penyesuaian'
     }
     return labels[type] || type
 }
@@ -111,67 +107,56 @@ const getUniqueProducts = () => {
 </script>
 
 <template>
-    <Head title="Stock Movements" />
+    <Head title="Pergerakan Stok" />
 
     <AppLayout>
-        <div class="container mx-auto px-4 py-6">
+        <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Stock Movements</h1>
-                    <p class="text-sm text-gray-500">View and manage inventory movements</p>
-                </div>
-                <div class="flex gap-2">
+            <AppPageHeader title="Pergerakan Stok" description="Lihat dan kelola pergerakan inventori">
+                <template #actions>
                     <Button
                         variant="outline"
-                        size="sm"
                         as-child
-                        class="gap-2"
                     >
                         <Link href="/stock/overview">
-                            <PackageIcon class="h-4 w-4" />
-                            Stock Overview
+                            <PackageIcon class="mr-2 h-4 w-4" />
+                            Ringkasan Stok
                         </Link>
                     </Button>
-                    <Button
-                        size="sm"
-                        @click="visitCreate()"
-                        class="gap-2"
-                    >
-                        <PlusIcon class="h-4 w-4" />
-                        New Adjustment
+                    <Button @click="visitCreate()">
+                        <PlusIcon class="mr-2 h-4 w-4" />
+                        Penyesuaian Baru
                     </Button>
-                </div>
-            </div>
+                </template>
+            </AppPageHeader>
 
             <!-- Filters -->
-            <Card class="mb-6">
-                <CardContent class="p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <Card>
+                <CardContent>
+                    <div class="grid gap-4 md:grid-cols-6">
                         <!-- Search -->
-                        <div class="space-y-2">
-                            <Label for="search">Search</Label>
+                        <div class="grid gap-2">
+                            <Label for="search">Cari Produk</Label>
                             <div class="relative">
-                                <SearchIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="search"
                                     v-model="search"
-                                    type="text"
-                                    placeholder="Search products..."
-                                    class="pl-10"
+                                    placeholder="Nama produk..."
+                                    class="pl-10 h-10"
                                 />
                             </div>
                         </div>
 
                         <!-- Product Filter -->
-                        <div class="space-y-2">
-                            <Label for="product">Product</Label>
+                        <div class="grid gap-2">
+                            <Label for="product">Produk</Label>
                             <Select v-model="product">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Products" />
+                                <SelectTrigger class="h-10">
+                                    <SelectValue placeholder="Semua Produk" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Products</SelectItem>
+                                    <SelectItem value="all">Semua Produk</SelectItem>
                                     <SelectItem
                                         v-for="prod in getUniqueProducts()"
                                         :key="prod.id"
@@ -184,54 +169,63 @@ const getUniqueProducts = () => {
                         </div>
 
                         <!-- Type Filter -->
-                        <div class="space-y-2">
-                            <Label for="type">Movement Type</Label>
+                        <div class="grid gap-2">
+                            <Label for="type">Tipe Pergerakan</Label>
                             <Select v-model="type">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Types" />
+                                <SelectTrigger class="h-10">
+                                    <SelectValue placeholder="Semua Tipe" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">All Types</SelectItem>
-                                    <SelectItem value="in">Stock In</SelectItem>
-                                    <SelectItem value="out">Stock Out</SelectItem>
-                                    <SelectItem value="adjustment">Adjustment</SelectItem>
+                                    <SelectItem value="all">Semua Tipe</SelectItem>
+                                    <SelectItem value="in">Masuk</SelectItem>
+                                    <SelectItem value="out">Keluar</SelectItem>
+                                    <SelectItem value="adjustment">Penyesuaian</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <!-- Date Filter -->
-                        <div class="space-y-2">
-                            <Label for="date">Date</Label>
+                        <div class="grid gap-2">
+                            <Label for="date">Tanggal</Label>
                             <Input
                                 id="date"
                                 v-model="date"
                                 type="date"
+                                class="h-10"
                             />
                         </div>
 
                         <!-- Clear Filters -->
-                        <div class="flex items-end">
+                        <div class="grid gap-2">
+                            <Label>&nbsp;</Label>
                             <Button
                                 variant="outline"
-                                size="sm"
                                 @click="search = ''; product = 'all'; type = 'all'; date = ''"
-                                class="w-full"
+                                class="h-10"
                             >
-                                Clear Filters
+                                Reset Filter
                             </Button>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="grid gap-2">
+                            <Label>Total</Label>
+                            <div class="text-2xl font-bold">
+                                {{ props.movements.meta?.total || props.movements.data.length }} pergerakan
+                            </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid gap-4 md:grid-cols-4">
                 <Card>
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Movements</p>
-                                <p class="text-2xl font-bold">{{ props.movements.meta.total || 0 }}</p>
+                                <p class="text-sm font-medium text-muted-foreground">Total Pergerakan</p>
+                                <p class="text-2xl font-bold">{{ props.movements.meta?.total || 0 }}</p>
                             </div>
                             <PackageIcon class="h-8 w-8 text-blue-500" />
                         </div>
@@ -242,7 +236,7 @@ const getUniqueProducts = () => {
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Stock In</p>
+                                <p class="text-sm font-medium text-muted-foreground">Stok Masuk</p>
                                 <p class="text-2xl font-bold text-green-600">
                                     {{ props.movements.data.filter(m => m.type === 'in').length }}
                                 </p>
@@ -256,7 +250,7 @@ const getUniqueProducts = () => {
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Stock Out</p>
+                                <p class="text-sm font-medium text-muted-foreground">Stok Keluar</p>
                                 <p class="text-2xl font-bold text-red-600">
                                     {{ props.movements.data.filter(m => m.type === 'out').length }}
                                 </p>
@@ -270,7 +264,7 @@ const getUniqueProducts = () => {
                     <CardContent class="p-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Adjustments</p>
+                                <p class="text-sm font-medium text-muted-foreground">Penyesuaian</p>
                                 <p class="text-2xl font-bold text-yellow-600">
                                     {{ props.movements.data.filter(m => m.type === 'adjustment').length }}
                                 </p>
@@ -283,28 +277,25 @@ const getUniqueProducts = () => {
 
             <!-- Movements Table -->
             <Card>
-                <CardHeader>
-                    <CardTitle>Recent Stock Movements</CardTitle>
-                </CardHeader>
                 <CardContent>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">Date & Time</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">Product</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">Type</th>
-                                    <th class="text-center py-3 px-4 font-medium text-gray-500">Quantity</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">Reason</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">User</th>
-                                    <th class="text-left py-3 px-4 font-medium text-gray-500">Actions</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tanggal & Waktu</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Produk</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tipe</th>
+                                    <th class="text-center py-3 px-4 font-medium text-muted-foreground">Jumlah</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Alasan</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">User</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr
-                                    v-for="movement in movements.data"
+                                    v-for="movement in props.movements.data"
                                     :key="movement.id"
-                                    class="border-b hover:bg-gray-50"
+                                    class="border-b hover:bg-muted/50"
                                 >
                                     <td class="py-3 px-4">
                                         <div class="text-sm">
@@ -314,7 +305,7 @@ const getUniqueProducts = () => {
                                     <td class="py-3 px-4">
                                         <div>
                                             <div class="font-medium">{{ movement.product.name }}</div>
-                                            <div class="text-sm text-gray-500">{{ movement.product.category.name }}</div>
+                                            <div class="text-sm text-muted-foreground">{{ movement.product.category.name }}</div>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
@@ -340,57 +331,52 @@ const getUniqueProducts = () => {
                                     </td>
                                     <td class="py-3 px-4">
                                         <div class="flex items-center gap-1">
-                                            <UserIcon class="h-3 w-3 text-gray-400" />
+                                            <UserIcon class="h-3 w-3 text-muted-foreground" />
                                             <span class="text-sm">{{ movement.user?.name || 'System' }}</span>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <div class="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                class="gap-1"
-                                                disabled
-                                            >
-                                                <EyeIcon class="h-3 w-3" />
-                                                View
-                                            </Button>
-                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            disabled
+                                        >
+                                            <EyeIcon class="h-4 w-4 mr-1" />
+                                            Lihat
+                                        </Button>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
 
                         <!-- Empty State -->
-                        <div v-if="movements.data.length === 0" class="text-center py-12">
-                            <PackageIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">No stock movements found</h3>
-                            <p class="text-gray-500 mb-4">Start managing inventory to see movements here.</p>
-                            <Button @click="visitCreate()" class="gap-2">
-                                <PlusIcon class="h-4 w-4" />
-                                Create Stock Adjustment
+                        <div v-if="!props.movements.data.length" class="text-center py-12">
+                            <PackageIcon class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 class="text-lg font-semibold mb-2">Belum ada pergerakan stok</h3>
+                            <p class="text-muted-foreground mb-4">Mulai kelola inventori untuk melihat pergerakan di sini.</p>
+                            <Button @click="visitCreate()">
+                                <PlusIcon class="mr-2 h-4 w-4" />
+                                Buat Penyesuaian Stok
                             </Button>
                         </div>
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="movements.links && movements.links.length > 3" class="mt-6 flex justify-center">
-                        <nav class="flex space-x-2">
-                            <Link
-                                v-for="link in movements.links"
-                                :key="link.label"
-                                :href="link.url || '#'"
-                                :class="[
-                                    'px-3 py-2 text-sm rounded-md border',
-                                    link.active
-                                        ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50',
-                                    !link.url ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                                ]"
-                            >
-                                {{ link.label }}
+                    <div v-if="props.movements.links && props.movements.links.length > 3"
+                        class="flex items-center justify-center space-x-2 mt-6">
+                        <template v-for="link in props.movements.links" :key="link.label">
+                            <Link v-if="link.url" :href="link.url" :class="{
+                                'px-3 py-2 text-sm font-medium rounded-md': true,
+                                'bg-primary text-primary-foreground': link.active,
+                                'bg-secondary text-secondary-foreground hover:bg-secondary/80': !link.active
+                            }">
+                            {{ link.label.replace('&laquo;', '«').replace('&raquo;', '»') }}
                             </Link>
-                        </nav>
+                            <span v-else
+                                class="px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed bg-secondary text-secondary-foreground">
+                                {{ link.label.replace('&laquo;', '«').replace('&raquo;', '»') }}
+                            </span>
+                        </template>
                     </div>
                 </CardContent>
             </Card>

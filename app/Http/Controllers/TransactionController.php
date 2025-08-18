@@ -37,7 +37,7 @@ class TransactionController extends Controller
             ->paginate(15);
 
         return Inertia::render('Transactions/Index', [
-            'transactions' => TransactionData::collect($transactions),
+            'transactions' => $this->mapPagination($transactions, fn ($items) => TransactionData::collect($items)),
             'filters' => request()->only(['search', 'status', 'date_from', 'date_to']),
         ]);
     }

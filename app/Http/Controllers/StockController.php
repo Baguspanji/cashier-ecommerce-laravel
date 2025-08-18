@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Data\BulkStockAdjustmentData;
+use App\Data\ProductData;
 use App\Data\StockMovementData;
 use App\Models\Product;
 use App\Models\StockMovement;
@@ -30,13 +31,13 @@ class StockController extends Controller
                 $query->whereDate('created_at', '<=', $dateTo);
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(12);
 
         $products = Product::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Stock/Index', [
-            'movements' => $movements,
-            'products' => $products,
+            'movements' => $this->mapPagination($movements, fn ($items) => StockMovementData::collect($items)),
+            'products' => $this->mapPagination($products, fn ($items) => ProductData::collect($items)),
             'filters' => request()->only(['product_id', 'type', 'date_from', 'date_to']),
         ]);
     }

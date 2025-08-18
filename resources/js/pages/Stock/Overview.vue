@@ -3,7 +3,8 @@ import { ref, watch } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { useStock } from '@/composables/useStock'
 import { type Product } from '@/composables/useProducts'
@@ -14,14 +15,28 @@ import {
     XCircleIcon,
     TrendingUpIcon,
     PlusIcon,
-    HistoryIcon
+    HistoryIcon,
+    CheckCircleIcon
 } from 'lucide-vue-next'
 
 interface Props {
     products: {
         data: Product[]
-        links: any[]
-        meta: any
+        links?: {
+            url: string | null
+            label: string
+            active: boolean
+        }[]
+        meta?: {
+            total: number
+            per_page: number
+            current_page: number
+            last_page: number
+            from: number | null
+            to: number | null
+            path: string
+            has_more_pages: boolean
+        }
     }
     categories: Category[]
     summary: {
@@ -73,24 +88,20 @@ const formatCurrency = (value: number) => {
 
 const getStockStatus = (product: Product) => {
     if (product.current_stock === 0) {
-        return { label: 'Habis', variant: 'destructive', bgClass: 'bg-red-100 text-red-800' }
+        return { label: 'Habis', variant: 'destructive' as const, bgClass: 'bg-red-100 text-red-800', icon: XCircleIcon }
     } else if (product.current_stock <= product.minimum_stock) {
-        return { label: 'Stok Rendah', variant: 'warning', bgClass: 'bg-yellow-100 text-yellow-800' }
+        return { label: 'Stok Rendah', variant: 'warning' as const, bgClass: 'bg-yellow-100 text-yellow-800', icon: AlertTriangleIcon }
     } else {
-        return { label: 'Tersedia', variant: 'success', bgClass: 'bg-green-100 text-green-800' }
+        return { label: 'Tersedia', variant: 'default' as const, bgClass: 'bg-green-100 text-green-800', icon: CheckCircleIcon }
     }
 }
-
-const breadcrumbs = [
-    { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Overview Stok', href: route('stock.overview') },
-]
 </script>
 
 <template>
+
     <Head title="Overview Stok" />
 
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
@@ -107,8 +118,8 @@ const breadcrumbs = [
                     </Button>
                     <Button as-child>
                         <Link :href="route('stock.index')">
-                            <HistoryIcon class="mr-2 h-4 w-4" />
-                            Riwayat Stok
+                        <HistoryIcon class="mr-2 h-4 w-4" />
+                        Riwayat Stok
                         </Link>
                     </Button>
                 </div>
@@ -116,73 +127,69 @@ const breadcrumbs = [
 
             <!-- Summary Cards -->
             <div class="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Total Produk</CardTitle>
-                        <PackageIcon class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ props.summary.total_products }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Produk terdaftar
-                        </p>
-                    </CardContent>
+                <Card class="p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                            <PackageIcon class="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">{{ props.summary.total_products }}</div>
+                            <p class="text-sm text-muted-foreground">Total Produk</p>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Stok Rendah</CardTitle>
-                        <AlertTriangleIcon class="h-4 w-4 text-yellow-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold text-yellow-600">{{ props.summary.low_stock_count }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Perlu diperhatikan
-                        </p>
-                    </CardContent>
+                <Card class="p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                            <AlertTriangleIcon class="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{
+                                props.summary.low_stock_count }}</div>
+                            <p class="text-sm text-muted-foreground">Stok Rendah</p>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Stok Habis</CardTitle>
-                        <XCircleIcon class="h-4 w-4 text-red-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold text-red-600">{{ props.summary.out_of_stock_count }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Perlu direstock
-                        </p>
-                    </CardContent>
+                <Card class="p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                            <XCircleIcon class="h-8 w-8 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{
+                                props.summary.out_of_stock_count }}</div>
+                            <p class="text-sm text-muted-foreground">Stok Habis</p>
+                        </div>
+                    </div>
                 </Card>
 
-                <Card>
-                    <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle class="text-sm font-medium">Nilai Stok</CardTitle>
-                        <TrendingUpIcon class="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div class="text-2xl font-bold">{{ formatCurrency(props.summary.total_stock_value) }}</div>
-                        <p class="text-xs text-muted-foreground">
-                            Total aset inventori
-                        </p>
-                    </CardContent>
+                <Card class="p-4">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                            <TrendingUpIcon class="h-8 w-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">{{ formatCurrency(props.summary.total_stock_value) }}</div>
+                            <p class="text-sm text-muted-foreground">Nilai Stok</p>
+                        </div>
+                    </div>
                 </Card>
             </div>
 
             <!-- Filters -->
             <Card>
-                <CardContent class="pt-6">
+                <CardContent>
                     <div class="grid gap-4 md:grid-cols-3">
                         <!-- Category Filter -->
                         <div class="grid gap-2">
                             <Label for="category">Kategori</Label>
-                            <select
-                                id="category"
-                                v-model="categoryId"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
+                            <select id="category" v-model="categoryId"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                                 <option value="all">Semua Kategori</option>
-                                <option v-for="category in props.categories" :key="category.id" :value="category.id.toString()">
+                                <option v-for="category in props.categories" :key="category.id"
+                                    :value="category.id.toString()">
                                     {{ category.name }}
                                 </option>
                             </select>
@@ -191,11 +198,8 @@ const breadcrumbs = [
                         <!-- Status Filter -->
                         <div class="grid gap-2">
                             <Label for="status">Status Stok</Label>
-                            <select
-                                id="status"
-                                v-model="stockStatus"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
+                            <select id="status" v-model="stockStatus"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                                 <option value="all">Semua Status</option>
                                 <option value="low">Stok Rendah</option>
                                 <option value="out">Stok Habis</option>
@@ -206,54 +210,52 @@ const breadcrumbs = [
                         <div class="grid gap-2">
                             <Label>Hasil Filter</Label>
                             <div class="text-2xl font-bold">
-                                {{ props.products.meta.total || 0 }} produk
+                                {{ props.products.meta?.total || 0 }} Produk
                             </div>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            <!-- Products List -->
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daftar Produk</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="space-y-4">
-                        <div v-for="product in props.products.data" :key="product.id"
-                             class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="flex items-center space-x-4">
-                                <div class="space-y-1">
-                                    <h4 class="font-medium">{{ product.name }}</h4>
-                                    <p class="text-sm text-muted-foreground">{{ product.category.name }}</p>
-                                </div>
+            <!-- Products Grid -->
+            <div class="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <Card v-for="product in props.products.data" :key="product.id"
+                    class="hover:shadow-md transition-shadow">
+                    <CardContent>
+                        <div class="space-y-2">
+                            <!-- Header with product info -->
+                            <div class="space-y-1">
+                                <h4 class="font-medium text-sm leading-tight truncate">{{ product.name }}</h4>
+                                <p class="text-xs text-muted-foreground truncate">{{ product.category?.name || 'Tanpa Kategori' }}</p>
                             </div>
 
-                            <div class="flex items-center space-x-4">
-                                <div class="text-right">
-                                    <div class="font-medium">{{ formatPrice(product.price) }}</div>
-                                    <div class="text-sm text-muted-foreground">
-                                        Stok: {{ product.current_stock }} / Min: {{ product.minimum_stock }}
-                                    </div>
-                                </div>
+                            <!-- Price -->
+                            <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
 
-                                <span :class="['inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', getStockStatus(product).bgClass]">
+                            <!-- Stock status badge -->
+                            <div class="flex items-center justify-between">
+                                <Badge :variant="getStockStatus(product).variant" class="text-xs">
+                                    <component :is="getStockStatus(product).icon" class="mr-1 h-2 w-2" />
                                     {{ getStockStatus(product).label }}
-                                </span>
+                                </Badge>
+                            </div>
 
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    @click="visitProductMovements(product.id)"
-                                >
+                            <!-- Stock info -->
+                            <div class="text-xs text-muted-foreground">
+                                Stok: {{ product.current_stock }} / Min: {{ product.minimum_stock }}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="pt-2">
+                                <Button variant="outline" size="sm" @click="visitProductMovements(product.id)" class="w-full">
                                     <HistoryIcon class="mr-2 h-4 w-4" />
-                                    Riwayat
+                                    Lihat Riwayat
                                 </Button>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
             <!-- Empty State -->
             <Card v-if="!props.products.data.length" class="p-8 text-center">
@@ -270,20 +272,21 @@ const breadcrumbs = [
             </Card>
 
             <!-- Pagination -->
-            <div v-if="props.products.links.length > 3" class="flex items-center justify-center space-x-2">
-                <Link
-                    v-for="link in props.products.links"
-                    :key="link.label"
-                    :href="link.url"
-                    :class="{
+            <div v-if="props.products?.links && props.products.links.length > 3"
+                class="flex items-center justify-center space-x-2">
+                <template v-for="link in props.products.links" :key="link.label">
+                    <Link v-if="link.url" :href="link.url" :class="{
                         'px-3 py-2 text-sm font-medium rounded-md': true,
                         'bg-primary text-primary-foreground': link.active,
-                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': !link.active && link.url,
-                        'opacity-50 cursor-not-allowed': !link.url
-                    }"
-                >
-                    {{ link.label.replace('&laquo;', '«').replace('&raquo;', '»') }}
-                </Link>
+                        'bg-secondary text-secondary-foreground hover:bg-secondary/80': !link.active
+                    }">
+                    {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
+                    </Link>
+                    <span v-else
+                        class="px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed bg-secondary text-secondary-foreground">
+                        {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
+                    </span>
+                </template>
             </div>
         </div>
     </AppLayout>

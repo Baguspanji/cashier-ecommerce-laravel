@@ -94,7 +94,7 @@ export const useTransactions = () => {
     }
 
     const visitPOS = () => {
-        router.get(route('transactions.pos'))
+        router.get(route('dashboard'))
     }
 
     const visitDailyReport = (date?: string) => {

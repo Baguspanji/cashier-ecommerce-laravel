@@ -8,7 +8,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     BookOpen,
     Folder,
-    LayoutGrid,
+    // LayoutGrid,
     PackageIcon,
     TagIcon,
     ShoppingCartIcon,
@@ -18,14 +18,14 @@ import {
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
+    // {
+    //     title: 'Dashboard',
+    //     href: '/dashboard',
+    //     icon: LayoutGrid,
+    // },
     {
         title: 'Point of Sale',
-        href: route('transactions.pos'),
+        href: route('dashboard'),
         icon: ShoppingCartIcon,
     },
     {

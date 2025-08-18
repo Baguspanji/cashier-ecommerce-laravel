@@ -36,7 +36,7 @@ class ProductController extends Controller
         $categories = Category::orderBy('name')->get();
 
         return Inertia::render('Products/Index', [
-            'products' => ProductData::collect($products),
+            'products' => $this->mapPagination($products, fn ($items) => ProductData::collect($items)),
             'categories' => CategoryData::collect($categories),
             'filters' => request()->only(['search', 'category_id', 'status']),
         ]);

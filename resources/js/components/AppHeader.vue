@@ -15,7 +15,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     BookOpen,
     Folder,
-    LayoutGrid,
+    // LayoutGrid,
     Menu,
     Search,
     PackageIcon,
@@ -44,14 +44,14 @@ const activeItemStyles = computed(
 );
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
+    // {
+    //     title: 'Dashboard',
+    //     href: '/dashboard',
+    //     icon: LayoutGrid,
+    // },
     {
         title: 'POS',
-        href: route('transactions.pos'),
+        href: route('dashboard'),
         icon: ShoppingCartIcon,
     },
     {
@@ -65,14 +65,14 @@ const mainNavItems: NavItem[] = [
         icon: PackageIcon,
     },
     {
-        title: 'Transaksi',
-        href: route('transactions.index'),
-        icon: BarChart3Icon,
-    },
-    {
         title: 'Stok',
         href: route('stock.overview'),
         icon: TrendingUpIcon,
+    },
+    {
+        title: 'Transaksi',
+        href: route('transactions.index'),
+        icon: BarChart3Icon,
     },
 ];
 
