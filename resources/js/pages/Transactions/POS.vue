@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useTransactions, type CreateTransactionData } from '@/composables/useTransactions'
+import { useOfflineSync } from '@/composables/useOfflineSync'
+import { useNotifications } from '@/composables/useNotifications'
 import { type Product } from '@/composables/useProducts'
 import {
     ShoppingCartIcon,
@@ -18,7 +20,9 @@ import {
     BanknoteIcon,
     SmartphoneIcon,
     SearchIcon,
-    ScanIcon
+    ScanIcon,
+    WifiOffIcon,
+    WifiIcon
 } from 'lucide-vue-next'
 
 interface Props {
@@ -34,6 +38,8 @@ interface CartItem {
 const props = defineProps<Props>()
 
 const { loading, errors, store } = useTransactions()
+const { isOnline, storeOfflineTransaction, isSyncing } = useOfflineSync()
+const { addNotification } = useNotifications()
 
 // State management
 const search = ref('')
@@ -116,7 +122,7 @@ const clearCart = () => {
     notes.value = ''
 }
 
-const checkout = () => {
+const checkout = async () => {
     const transactionData: CreateTransactionData = {
         items: cart.value.map(item => ({
             product_id: item.product.id,
@@ -127,11 +133,59 @@ const checkout = () => {
         notes: notes.value || undefined
     }
 
-    store(transactionData)
+    if (isOnline.value) {
+        // Online mode: use regular store function
+        try {
+            await store(transactionData)
 
-    // Clear cart if successful (will be handled by redirect)
-    if (!Object.keys(errors.value).length) {
-        clearCart()
+            // Clear cart if successful
+            if (!Object.keys(errors.value).length) {
+                clearCart()
+                addNotification({
+                    type: 'success',
+                    title: 'Transaksi Berhasil',
+                    message: `Transaksi sebesar ${formatPrice(totalAmount.value)} berhasil diproses`
+                })
+            }
+        } catch (error: unknown) {
+            console.error('Online transaction error:', error)
+            addNotification({
+                type: 'error',
+                title: 'Transaksi Gagal',
+                message: 'Terjadi kesalahan saat memproses transaksi'
+            })
+        }
+    } else {
+        // Offline mode: store transaction locally
+        try {
+            const offlineTransaction = {
+                customer_name: undefined, // Optional for POS
+                total_amount: totalAmount.value,
+                payment_method: paymentMethod.value as 'cash' | 'bank_transfer' | 'e_wallet',
+                items: cart.value.map(item => ({
+                    product_id: item.product.id,
+                    quantity: item.quantity,
+                    price: parseFloat(item.product.price)
+                })),
+                created_at: new Date().toISOString()
+            }
+
+            await storeOfflineTransaction(offlineTransaction)
+            clearCart()
+
+            addNotification({
+                type: 'success',
+                title: 'Transaksi Tersimpan Offline',
+                message: `Transaksi sebesar ${formatPrice(totalAmount.value)} disimpan dan akan disinkronkan nanti`
+            })
+        } catch (error: unknown) {
+            console.error('Failed to store offline transaction:', error)
+            addNotification({
+                type: 'error',
+                title: 'Gagal Menyimpan Transaksi',
+                message: 'Terjadi kesalahan saat menyimpan transaksi offline'
+            })
+        }
     }
 }
 
@@ -170,14 +224,24 @@ const handleBarcodeScanned = (barcode: string) => {
     if (product) {
         if (product.current_stock > 0 && product.is_active) {
             addToCart(product)
-            // Show success feedback (could add toast notification here)
+            addNotification({
+                type: 'success',
+                title: 'Produk Ditambahkan',
+                message: `${product.name} berhasil ditambahkan ke keranjang`
+            })
         } else {
-            // Show error: product out of stock or inactive
-            console.warn('Product out of stock or inactive:', product.name)
+            addNotification({
+                type: 'warning',
+                title: 'Produk Tidak Tersedia',
+                message: `${product.name} sedang tidak tersedia atau stok habis`
+            })
         }
     } else {
-        // Show error: product not found
-        console.warn('Product not found for barcode:', barcode)
+        addNotification({
+            type: 'error',
+            title: 'Barcode Tidak Ditemukan',
+            message: `Produk dengan barcode ${barcode} tidak ditemukan`
+        })
         // Set search value to barcode for manual search
         search.value = barcode
     }
@@ -203,9 +267,23 @@ const closeBarcodeScanner = () => {
             <div class="lg:col-span-2 space-y-6">
                 <div class="flex items-end justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold leading-tight">POS</h1>
+                        <div class="flex items-center gap-3">
+                            <h1 class="text-2xl font-bold leading-tight">POS</h1>
+                            <div class="flex items-center gap-1 text-sm">
+                                <div :class="[
+                                    'w-2 h-2 rounded-full',
+                                    isOnline ? 'bg-green-500' : 'bg-red-500'
+                                ]"></div>
+                                <span :class="[
+                                    'font-medium',
+                                    isOnline ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                ]">
+                                    {{ isOnline ? 'Online' : 'Offline' }}
+                                </span>
+                            </div>
+                        </div>
                         <p class="text-muted-foreground">
-                            Kelola transaksi penjualan dengan mudah
+                            Kelola transaksi penjualan dengan mudah{{ !isOnline ? ' (Mode Offline)' : '' }}
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -376,8 +454,15 @@ const closeBarcodeScanner = () => {
 
                         <!-- Actions -->
                         <div class="space-y-2 pt-4">
-                            <Button @click="checkout" :disabled="!canCheckout || loading" class="w-full" size="lg">
-                                {{ loading ? 'Memproses...' : 'Bayar' }}
+                            <div v-if="!isOnline" class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 p-2 rounded-md">
+                                <WifiOffIcon class="h-4 w-4" />
+                                <span>Mode Offline - Transaksi akan disinkronkan nanti</span>
+                            </div>
+
+                            <Button @click="checkout" :disabled="!canCheckout || loading || isSyncing" class="w-full" size="lg">
+                                <WifiOffIcon v-if="!isOnline" class="h-4 w-4 mr-2" />
+                                <WifiIcon v-else class="h-4 w-4 mr-2" />
+                                {{ loading || isSyncing ? 'Memproses...' : isOnline ? 'Bayar' : 'Bayar (Offline)' }}
                             </Button>
 
                             <Button variant="outline" @click="clearCart" class="w-full" :disabled="loading">

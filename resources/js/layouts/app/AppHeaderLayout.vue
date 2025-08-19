@@ -4,6 +4,8 @@ import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import PWAUpdatePrompt from '@/components/PWAUpdatePrompt.vue';
 import AppAlert from '@/components/AppAlert.vue';
+import SyncStatus from '@/components/SyncStatus.vue';
+import NotificationContainer from '@/components/NotificationContainer.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -23,5 +25,7 @@ withDefaults(defineProps<Props>(), {
         </AppContent>
         <PWAUpdatePrompt />
         <AppAlert />
+        <SyncStatus />
+        <NotificationContainer />
     </AppShell>
 </template>
