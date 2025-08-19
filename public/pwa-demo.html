@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Sync Demo - Cashier Ecommerce</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .online .indicator {
+            background: #28a745;
+        }
+        .offline .indicator {
+            background: #dc3545;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .transaction-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .pending-list {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .pending-item {
+            padding: 10px;
+            border: 1px solid #ffeaa7;
+            margin: 5px 0;
+            border-radius: 3px;
+            background: white;
+        }
+        .log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ PWA Sync Demo - Cashier Ecommerce</h1>
+        <p>This demo shows Phase 4 PWA offline sync functionality for the Laravel cashier application.</p>
+
+        <!-- Connection Status -->
+        <div id="connection-status" class="status online">
+            <div class="indicator"></div>
+            <span id="status-text">Online</span>
+        </div>
+
+        <!-- Demo Transaction Form -->
+        <div class="transaction-form">
+            <h3>🧾 Create Demo Transaction</h3>
+            <div class="form-group">
+                <label>Customer Name:</label>
+                <input type="text" id="customer-name" placeholder="Optional customer name">
+            </div>
+            <div class="form-group">
+                <label>Payment Method:</label>
+                <select id="payment-method">
+                    <option value="cash">Cash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="e_wallet">E-Wallet</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Total Amount (IDR):</label>
+                <input type="number" id="total-amount" value="50000" min="1000">
+            </div>
+            <button onclick="createTransaction()">Create Transaction</button>
+        </div>
+
+        <!-- Sync Controls -->
+        <div>
+            <h3>🔄 Sync Controls</h3>
+            <button onclick="syncNow()" id="sync-btn">Sync Now</button>
+            <button onclick="toggleConnection()">Toggle Connection</button>
+            <button onclick="clearOfflineData()">Clear Offline Data</button>
+            <button onclick="showPendingTransactions()">Show Pending</button>
+        </div>
+
+        <!-- Pending Transactions -->
+        <div id="pending-section" style="display: none;">
+            <h3>⏳ Pending Transactions</h3>
+            <div id="pending-list" class="pending-list">
+                <p>No pending transactions</p>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div>
+            <h3>📋 Activity Log</h3>
+            <div id="log" class="log"></div>
+        </div>
+
+        <!-- API Endpoints Info -->
+        <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 5px;">
+            <h3>🔌 Available API Endpoints</h3>
+            <ul>
+                <li><code>GET /api/sync/status</code> - Get sync status</li>
+                <li><code>GET /api/sync/pending</code> - Get pending operations</li>
+                <li><code>POST /api/sync/complete</code> - Mark operations as completed</li>
+                <li><code>POST /api/transactions/sync</code> - Sync transactions</li>
+                <li><code>GET /api/transactions/download</code> - Download transactions</li>
+                <li><code>GET /api/transactions/sync-status</code> - Get transaction sync status</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Simulate offline sync functionality
+        let isOnline = true;
+        let pendingTransactions = [];
+        let transactionCounter = 1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+            log('PWA Sync Demo initialized', 'info');
+
+            // Register service worker if supported
+            if ('serviceWorker' in navigator) {
+                log('Service Worker supported', 'info');
+            } else {
+                log('Service Worker not supported', 'error');
+            }
+        });
+
+        function updateStatus() {
+            const statusEl = document.getElementById('connection-status');
+            const textEl = document.getElementById('status-text');
+
+            if (isOnline) {
+                statusEl.className = 'status online';
+                textEl.textContent = 'Online';
+            } else {
+                statusEl.className = 'status offline';
+                textEl.textContent = 'Offline';
+            }
+        }
+
+        function createTransaction() {
+            const customerName = document.getElementById('customer-name').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+            const totalAmount = parseInt(document.getElementById('total-amount').value);
+
+            if (!totalAmount || totalAmount < 1000) {
+                log('Invalid amount (minimum IDR 1,000)', 'error');
+                return;
+            }
+
+            const transaction = {
+                offline_id: `offline_${Date.now()}_${transactionCounter++}`,
+                customer_name: customerName || null,
+                payment_method: paymentMethod,
+                total_amount: totalAmount,
+                items: [
+                    {
+                        product_id: 1, // Demo product
+                        quantity: 1,
+                        price: totalAmount
+                    }
+                ],
+                created_at: new Date().toISOString()
+            };
+
+            if (isOnline) {
+                // Simulate direct API call
+                log(`✅ Transaction created directly (Online): ${formatCurrency(totalAmount)}`, 'success');
+                simulateApiCall('/api/transactions/sync', transaction);
+            } else {
+                // Store offline
+                pendingTransactions.push(transaction);
+                log(`💾 Transaction stored offline: ${formatCurrency(totalAmount)}`, 'info');
+                updatePendingDisplay();
+            }
+        }
+
+        function syncNow() {
+            if (!isOnline) {
+                log('❌ Cannot sync while offline', 'error');
+                return;
+            }
+
+            if (pendingTransactions.length === 0) {
+                log('ℹ️ No pending transactions to sync', 'info');
+                return;
+            }
+
+            const btn = document.getElementById('sync-btn');
+            btn.disabled = true;
+            btn.textContent = 'Syncing...';
+
+            // Simulate sync process
+            setTimeout(() => {
+                const syncedCount = pendingTransactions.length;
+                pendingTransactions = []; // Clear all pending
+
+                log(`🔄 Synced ${syncedCount} transactions successfully`, 'success');
+                updatePendingDisplay();
+
+                btn.disabled = false;
+                btn.textContent = 'Sync Now';
+            }, 1500);
+        }
+
+        function toggleConnection() {
+            isOnline = !isOnline;
+            updateStatus();
+
+            if (isOnline) {
+                log('🌐 Connection restored', 'success');
+                if (pendingTransactions.length > 0) {
+                    log(`🔄 Auto-sync triggered: ${pendingTransactions.length} pending transactions`, 'info');
+                    setTimeout(syncNow, 1000); // Auto-sync after 1 second
+                }
+            } else {
+                log('📱 Gone offline', 'error');
+            }
+        }
+
+        function clearOfflineData() {
+            if (confirm('Clear all offline data? This cannot be undone.')) {
+                pendingTransactions = [];
+                log('🗑️ All offline data cleared', 'info');
+                updatePendingDisplay();
+            }
+        }
+
+        function showPendingTransactions() {
+            const section = document.getElementById('pending-section');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            updatePendingDisplay();
+        }
+
+        function updatePendingDisplay() {
+            const listEl = document.getElementById('pending-list');
+
+            if (pendingTransactions.length === 0) {
+                listEl.innerHTML = '<p>No pending transactions</p>';
+                return;
+            }
+
+            listEl.innerHTML = pendingTransactions.map(tx => `
+                <div class="pending-item">
+                    <strong>${formatCurrency(tx.total_amount)}</strong> -
+                    ${tx.customer_name || 'No customer'}
+                    (${tx.payment_method})
+                    <br>
+                    <small>ID: ${tx.offline_id}</small>
+                </div>
+            `).join('');
+        }
+
+        function simulateApiCall(endpoint, data) {
+            log(`📡 API Call: ${endpoint}`, 'info');
+            log(`📄 Data: ${JSON.stringify(data, null, 2)}`, 'info');
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR'
+            }).format(amount);
+        }
+
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+
+            logEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            isOnline = true;
+            updateStatus();
+            log('🌐 Browser detected online status', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            updateStatus();
+            log('📱 Browser detected offline status', 'error');
+        });
+    </script>
+</body>
+</html>

@@ -17,12 +17,20 @@ class TransactionItem extends Model
         'product_name',
         'quantity',
         'unit_price',
+        'price',
         'subtotal',
+        'offline_id',
+        'sync_status',
+        'last_sync_at',
+        'sync_metadata',
     ];
 
     protected $casts = [
         'unit_price' => 'decimal:2',
+        'price' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'sync_metadata' => 'array',
+        'last_sync_at' => 'datetime',
     ];
 
     /**

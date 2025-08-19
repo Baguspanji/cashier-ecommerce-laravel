@@ -22,7 +22,19 @@ class StockMovement extends Model
         'reference_type',
         'notes',
         'user_id',
+        'offline_id',
+        'sync_status',
+        'last_sync_at',
+        'sync_metadata',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'sync_metadata' => 'array',
+            'last_sync_at' => 'datetime',
+        ];
+    }
 
     /**
      * Get the product that owns the stock movement.

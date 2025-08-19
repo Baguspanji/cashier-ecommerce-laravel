@@ -15,18 +15,25 @@ class Transaction extends Model
     protected $fillable = [
         'transaction_number',
         'user_id',
+        'customer_name',
         'total_amount',
         'payment_method',
         'payment_amount',
         'change_amount',
         'status',
         'notes',
+        'offline_id',
+        'sync_status',
+        'last_sync_at',
+        'sync_metadata',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'payment_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',
+        'sync_metadata' => 'array',
+        'last_sync_at' => 'datetime',
     ];
 
     /**
