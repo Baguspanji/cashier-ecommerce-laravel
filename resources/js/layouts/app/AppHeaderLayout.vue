@@ -3,6 +3,7 @@ import AppContent from '@/components/AppContent.vue';
 import AppHeader from '@/components/AppHeader.vue';
 import AppShell from '@/components/AppShell.vue';
 import PWAUpdatePrompt from '@/components/PWAUpdatePrompt.vue';
+import AppAlert from '@/components/AppAlert.vue';
 import type { BreadcrumbItemType } from '@/types';
 
 interface Props {
@@ -21,5 +22,6 @@ withDefaults(defineProps<Props>(), {
             <slot />
         </AppContent>
         <PWAUpdatePrompt />
+        <AppAlert />
     </AppShell>
 </template>

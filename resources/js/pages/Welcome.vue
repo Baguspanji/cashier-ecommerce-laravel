@@ -62,14 +62,17 @@ const isAuthenticated = computed(() => {
 </script>
 
 <template>
+
     <Head title="Welcome - Cashier E-commerce">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
+    <div
+        class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
         <!-- Header -->
-        <header class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700 sticky top-0 z-50">
+        <header
+            class="w-full bg-white/80 backdrop-blur-sm border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700 sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo -->
@@ -80,26 +83,19 @@ const isAuthenticated = computed(() => {
 
                     <!-- Navigation -->
                     <nav class="flex items-center space-x-4">
-                        <Link
-                            v-if="isAuthenticated"
-                            :href="route('dashboard')"
-                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                        >
-                            Dashboard
+                        <Link v-if="isAuthenticated" :href="route('dashboard')"
+                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        Dashboard
                         </Link>
                         <template v-else>
-                            <Link
-                                :href="route('login')"
-                                class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors dark:text-gray-300 dark:hover:text-blue-400"
-                            >
-                                Masuk
+                            <Link :href="route('login')"
+                                class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors dark:text-gray-300 dark:hover:text-blue-400">
+                            Masuk
                             </Link>
-                            <Link
-                                :href="route('register')"
-                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                            >
-                                Daftar
-                            </Link>
+                            <!-- <Link :href="route('register')"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                            Daftar
+                            </Link> -->
                         </template>
                     </nav>
                 </div>
@@ -117,27 +113,20 @@ const isAuthenticated = computed(() => {
                         </span>
                     </h1>
                     <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-                        Temukan produk terbaik dengan harga terjangkau. Kelola toko Anda dengan mudah menggunakan sistem kasir modern kami.
+                        Temukan produk terbaik dengan harga terjangkau. Kelola toko Anda dengan mudah menggunakan sistem
+                        kasir
+                        modern kami.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                            v-if="!isAuthenticated"
-                            as-child
-                            size="lg"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-                        >
+                        <Button v-if="!isAuthenticated" as-child size="lg"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
                             <Link :href="route('register')">
-                                Mulai Sekarang
+                            Mulai Sekarang
                             </Link>
                         </Button>
-                        <Button
-                            v-else
-                            as-child
-                            size="lg"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
-                        >
+                        <Button v-else as-child size="lg" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
                             <Link :href="route('dashboard')">
-                                Buka Dashboard
+                            Buka Dashboard
                             </Link>
                         </Button>
                         <Button variant="outline" size="lg" class="px-8 py-3">
@@ -163,31 +152,21 @@ const isAuthenticated = computed(() => {
 
                 <!-- Category Filter -->
                 <div class="flex flex-wrap justify-center gap-3 mb-12">
-                    <Button
-                        variant="outline"
-                        :class="[
-                            'transition-all duration-200',
-                            selectedCategory === null
-                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                : 'hover:bg-blue-50 dark:hover:bg-gray-700'
-                        ]"
-                        @click="selectCategory(null)"
-                    >
+                    <Button variant="outline" :class="[
+                        'transition-all duration-200',
+                        selectedCategory === null
+                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                            : 'hover:bg-blue-50 dark:hover:bg-gray-700'
+                    ]" @click="selectCategory(null)">
                         <TagIcon class="w-4 h-4 mr-2" />
                         Semua Produk
                     </Button>
-                    <Button
-                        v-for="category in categories"
-                        :key="category.id"
-                        variant="outline"
-                        :class="[
-                            'transition-all duration-200',
-                            selectedCategory === category.id
-                                ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
-                                : 'hover:bg-blue-50 dark:hover:bg-gray-700'
-                        ]"
-                        @click="selectCategory(category.id)"
-                    >
+                    <Button v-for="category in categories" :key="category.id" variant="outline" :class="[
+                        'transition-all duration-200',
+                        selectedCategory === category.id
+                            ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                            : 'hover:bg-blue-50 dark:hover:bg-gray-700'
+                    ]" @click="selectCategory(category.id)">
                         {{ category.name }}
                         <Badge variant="secondary" class="ml-2">
                             {{ category.products_count }}
@@ -197,14 +176,12 @@ const isAuthenticated = computed(() => {
 
                 <!-- Categories Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card
-                        v-for="category in categories"
-                        :key="category.id"
+                    <Card v-for="category in categories" :key="category.id"
                         class="group hover:shadow-lg transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900"
-                        @click="selectCategory(category.id)"
-                    >
+                        @click="selectCategory(category.id)">
                         <CardHeader class="text-center pb-4">
-                            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <div
+                                class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                 <TagIcon class="w-8 h-8 text-white" />
                             </div>
                             <CardTitle class="text-lg">{{ category.name }}</CardTitle>
@@ -227,7 +204,9 @@ const isAuthenticated = computed(() => {
             <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                        {{ selectedCategory === null ? 'Produk Unggulan' : categories.find(c => c.id === selectedCategory)?.name }}
+                        {{selectedCategory === null ? 'Produk Unggulan' : categories.find(c => c.id ===
+                            selectedCategory)?.name
+                        }}
                     </h2>
                     <p class="text-gray-600 dark:text-gray-300">
                         {{ selectedCategory === null
@@ -239,22 +218,13 @@ const isAuthenticated = computed(() => {
 
                 <!-- Products Grid -->
                 <div v-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card
-                        v-for="product in filteredProducts"
-                        :key="product.id"
-                        class="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-white dark:bg-gray-800"
-                    >
+                    <Card v-for="product in filteredProducts" :key="product.id"
+                        class="group hover:shadow-xl transition-all duration-300 overflow-hidden border-0 bg-white dark:bg-gray-800">
                         <div class="aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-                            <img
-                                v-if="product.image_path"
-                                :src="product.image_path"
-                                :alt="product.name"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div
-                                v-else
-                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800"
-                            >
+                            <img v-if="product.image_path" :src="product.image_path" :alt="product.name"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div v-else
+                                class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
                                 <ShoppingCartIcon class="w-16 h-16 text-gray-400 dark:text-gray-500" />
                             </div>
                         </div>
@@ -262,7 +232,8 @@ const isAuthenticated = computed(() => {
                         <CardHeader class="pb-2">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
-                                    <CardTitle class="text-base line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                    <CardTitle
+                                        class="text-base line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                         {{ product.name }}
                                     </CardTitle>
                                     <CardDescription class="text-sm mt-1">
@@ -287,20 +258,15 @@ const isAuthenticated = computed(() => {
                                 <div class="text-lg font-bold text-blue-600 dark:text-blue-400">
                                     {{ formatPrice(product.price) }}
                                 </div>
-                                <Badge
-                                    :variant="product.current_stock > 0 ? 'default' : 'destructive'"
-                                    class="text-xs"
-                                >
+                                <Badge :variant="product.current_stock > 0 ? 'default' : 'destructive'" class="text-xs">
                                     Stok: {{ product.current_stock }}
                                 </Badge>
                             </div>
                         </CardContent>
 
                         <CardFooter class="pt-0">
-                            <Button
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                :disabled="product.current_stock === 0"
-                            >
+                            <Button class="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                :disabled="product.current_stock === 0">
                                 <ShoppingCartIcon class="w-4 h-4 mr-2" />
                                 {{ product.current_stock > 0 ? 'Tambah ke Keranjang' : 'Stok Habis' }}
                             </Button>
@@ -328,32 +294,23 @@ const isAuthenticated = computed(() => {
                     Siap untuk memulai bisnis Anda?
                 </h2>
                 <p class="text-xl text-blue-100 mb-8">
-                    Bergabunglah dengan ribuan penjual yang sudah mempercayai platform kami untuk mengelola bisnis mereka.
+                    Bergabunglah dengan ribuan penjual yang sudah mempercayai platform kami untuk mengelola bisnis
+                    mereka.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button
-                        v-if="!isAuthenticated"
-                        as-child
-                        size="lg"
-                        variant="secondary"
-                        class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3"
-                    >
+                <!-- <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button v-if="!isAuthenticated" as-child size="lg" variant="secondary"
+                        class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3">
                         <Link :href="route('register')">
-                            Daftar Gratis
+                        Daftar Gratis
                         </Link>
                     </Button>
-                    <Button
-                        v-else
-                        as-child
-                        size="lg"
-                        variant="secondary"
-                        class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3"
-                    >
+                    <Button v-else as-child size="lg" variant="secondary"
+                        class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-3">
                         <Link :href="route('dashboard')">
-                            Kelola Toko
+                        Kelola Toko
                         </Link>
                     </Button>
-                </div>
+                </div> -->
             </div>
         </section>
 

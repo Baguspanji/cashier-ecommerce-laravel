@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import AppAlert from '@/components/AppAlert.vue';
 import { Link } from '@inertiajs/vue3';
 
 defineProps<{
@@ -27,5 +28,6 @@ defineProps<{
                 <slot />
             </div>
         </div>
+        <AppAlert />
     </div>
 </template>

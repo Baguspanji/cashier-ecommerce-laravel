@@ -50,5 +50,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
 });
 
+// Flash Messages Testing Routes (Development Only)
+if (app()->environment('local')) {
+    Route::get('/test-flash-page', function () {
+        return Inertia::render('TestFlash');
+    })->name('test-flash-page');
+
+    Route::get('/test-flash/{type}/{message}', function ($type, $message) {
+        $validTypes = ['success', 'error', 'warning', 'info', 'message'];
+
+        if (!in_array($type, $validTypes)) {
+            abort(404, 'Invalid flash type');
+        }
+
+        return redirect()->route('test-flash-page')->with($type, urldecode($message));
+    })->name('test-flash');
+
+    Route::get('/test-flash-multiple', function () {
+        return redirect()->route('test-flash-page')
+            ->with('success', 'Operasi berhasil!')
+            ->with('info', 'Informasi tambahan tersedia.');
+    })->name('test-flash-multiple');
+}
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
