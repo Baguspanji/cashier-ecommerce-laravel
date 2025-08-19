@@ -19,6 +19,7 @@ class ProductFactory extends Factory
     {
         return [
             'name' => $this->faker->word() . ' ' . $this->faker->word() . ' ' . $this->faker->word(),
+            'barcode' => $this->faker->unique()->ean13(),
             'description' => $this->faker->paragraph(),
             'price' => $this->faker->randomFloat(2, 1000, 100000), // Price between 1000-100000
             'image_path' => null,
@@ -57,6 +58,26 @@ class ProductFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
+        ]);
+    }
+
+    /**
+     * Indicate that the product has no barcode (will be auto-generated).
+     */
+    public function withoutBarcode(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'barcode' => null,
+        ]);
+    }
+
+    /**
+     * Set a specific barcode for the product.
+     */
+    public function withBarcode(string $barcode): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'barcode' => $barcode,
         ]);
     }
 }

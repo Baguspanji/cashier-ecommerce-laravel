@@ -39,7 +39,7 @@ enum UserRole: string
                 'export_reports',
             ],
             self::Cashier => [
-                'create_transactions',
+                'manage_transactions',
                 'view_products',
                 'view_categories',
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Data;
 
+use App\PaymentMethod;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Attributes\Validation\Max;
@@ -16,7 +17,7 @@ class CreateTransactionData extends Data
     public function __construct(
         #[Required, ArrayType, Min(1)]
         public array $items,
-        #[Required, In(['cash', 'debit', 'credit', 'e-wallet'])]
+        #[Required, In(['cash', 'debit_card', 'credit_card', 'bank_transfer', 'e_wallet', 'qris'])]
         public string $payment_method,
         #[Required, Numeric, Min(0)]
         public float $payment_amount,

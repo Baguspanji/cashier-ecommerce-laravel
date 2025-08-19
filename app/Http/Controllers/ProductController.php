@@ -138,6 +138,12 @@ class ProductController extends Controller
     {
         Gate::authorize('manage_products');
 
+        // Check if product has transaction history
+        if ($product->transactionItems()->exists()) {
+            return redirect()->route('products.index')
+                ->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
+        }
+
         $product->delete();
 
         return redirect()->route('products.index')

@@ -142,6 +142,8 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
+        Gate::authorize('manage_transactions');
+
         $transaction->load(['user', 'items.product.category']);
 
         return Inertia::render('Transactions/Show', [
@@ -154,6 +156,8 @@ class TransactionController extends Controller
      */
     public function pos()
     {
+        Gate::authorize('manage_transactions');
+
         $products = Product::with('category')
             ->where('is_active', true)
             ->where('current_stock', '>', 0)
@@ -170,6 +174,8 @@ class TransactionController extends Controller
      */
     public function store(CreateTransactionData $data)
     {
+        Gate::authorize('manage_transactions');
+
         return DB::transaction(function () use ($data) {
             // Generate transaction number
             $transactionNumber = Transaction::generateTransactionNumber();
@@ -248,6 +254,8 @@ class TransactionController extends Controller
      */
     public function dailyReport()
     {
+        Gate::authorize('manage_transactions');
+
         $date = request('date', today()->format('Y-m-d'));
 
         $transactions = Transaction::with(['items.product.category'])
@@ -399,6 +407,8 @@ class TransactionController extends Controller
      */
     public function cancel(Transaction $transaction)
     {
+        Gate::authorize('manage_transactions');
+
         if ($transaction->status !== 'completed') {
             return redirect()->back()
                 ->with('error', 'Transaksi tidak dapat dibatalkan.');
