@@ -23,6 +23,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])
         ->name('products.toggle-status');
+    Route::get('products/search-barcode/{barcode}', [ProductController::class, 'searchByBarcode'])
+        ->name('products.search-barcode');
 
     // Transactions (Reports Page)
     Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');

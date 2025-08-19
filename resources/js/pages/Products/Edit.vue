@@ -25,6 +25,7 @@ const { loading, errors, update, visitIndex } = useProducts()
 // Form data
 const form = reactive<ProductData>({
     name: props.product.name,
+    barcode: props.product.barcode || '',
     description: props.product.description || '',
     category_id: props.product.category_id,
     price: parseFloat(props.product.price),
@@ -74,6 +75,19 @@ const handleCancel = () => {
                                     <div v-if="errors.name" class="text-sm text-destructive">
                                         {{ errors.name }}
                                     </div>
+                                </div>
+
+                                <!-- Barcode -->
+                                <div class="grid gap-2">
+                                    <Label for="barcode">Barcode (Opsional)</Label>
+                                    <Input id="barcode" v-model="form.barcode" placeholder="Scan atau masukkan barcode"
+                                        :disabled="loading" />
+                                    <div v-if="errors.barcode" class="text-sm text-destructive">
+                                        {{ errors.barcode }}
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">
+                                        Kosongkan untuk menggunakan barcode otomatis
+                                    </p>
                                 </div>
 
                                 <!-- Description -->

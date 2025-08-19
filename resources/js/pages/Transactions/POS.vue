@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import BarcodeScanner from '@/components/BarcodeScanner.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,7 +17,8 @@ import {
     CreditCardIcon,
     BanknoteIcon,
     SmartphoneIcon,
-    SearchIcon
+    SearchIcon,
+    ScanIcon
 } from 'lucide-vue-next'
 
 interface Props {
@@ -39,12 +41,14 @@ const cart = ref<CartItem[]>([])
 const paymentMethod = ref<'cash' | 'debit' | 'credit' | 'e-wallet'>('cash')
 const paymentAmount = ref(0)
 const notes = ref('')
+const showBarcodeScanner = ref(false)
 
 // Computed values
 const filteredProducts = computed(() => {
     if (!search.value) return props.products
     return props.products.filter(product =>
         product.name.toLowerCase().includes(search.value.toLowerCase()) ||
+        product.barcode?.includes(search.value) ||
         (product.category?.name?.toLowerCase().includes(search.value.toLowerCase()) || false)
     )
 })
@@ -157,6 +161,36 @@ const setPaymentAmount = (amount: number) => {
 
 const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
 
+const handleBarcodeScanned = (barcode: string) => {
+    showBarcodeScanner.value = false
+
+    // Search for product by barcode
+    const product = props.products.find(p => p.barcode === barcode)
+
+    if (product) {
+        if (product.current_stock > 0 && product.is_active) {
+            addToCart(product)
+            // Show success feedback (could add toast notification here)
+        } else {
+            // Show error: product out of stock or inactive
+            console.warn('Product out of stock or inactive:', product.name)
+        }
+    } else {
+        // Show error: product not found
+        console.warn('Product not found for barcode:', barcode)
+        // Set search value to barcode for manual search
+        search.value = barcode
+    }
+}
+
+const openBarcodeScanner = () => {
+    showBarcodeScanner.value = true
+}
+
+const closeBarcodeScanner = () => {
+    showBarcodeScanner.value = false
+}
+
 </script>
 
 <template>
@@ -174,9 +208,15 @@ const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
                             Kelola transaksi penjualan dengan mudah
                         </p>
                     </div>
-                    <div class="relative">
-                        <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input v-model="search" placeholder="Cari produk..." class="pl-10 w-64" />
+                    <div class="flex items-center gap-2">
+                        <Button @click="openBarcodeScanner" variant="outline" size="sm">
+                            <ScanIcon class="mr-2 h-4 w-4" />
+                            Scan Barcode
+                        </Button>
+                        <div class="relative">
+                            <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input v-model="search" placeholder="Cari produk/barcode..." class="pl-10 w-64" />
+                        </div>
                     </div>
                 </div>
 
@@ -348,5 +388,13 @@ const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
                 </Card>
             </div>
         </div>
+
+        <!-- Barcode Scanner Modal -->
+        <BarcodeScanner
+            :is-open="showBarcodeScanner"
+            title="Scan Product Barcode"
+            @scanned="handleBarcodeScanned"
+            @close="closeBarcodeScanner"
+        />
     </AppLayout>
 </template>

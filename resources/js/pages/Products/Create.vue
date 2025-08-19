@@ -24,6 +24,7 @@ const { loading, errors, store, visitIndex } = useProducts()
 // Form data
 const form = ref<ProductData>({
     name: '',
+    barcode: '',
     description: '',
     category_id: 0,
     price: 0,
@@ -69,6 +70,19 @@ const handleSubmit = () => {
                                 <div v-if="errors.name" class="text-sm text-destructive">
                                     {{ errors.name }}
                                 </div>
+                            </div>
+
+                            <!-- Barcode -->
+                            <div class="grid gap-2">
+                                <Label for="barcode">Barcode (Opsional)</Label>
+                                <Input id="barcode" v-model="form.barcode" placeholder="Scan atau masukkan barcode"
+                                    :disabled="loading" />
+                                <div v-if="errors.barcode" class="text-sm text-destructive">
+                                    {{ errors.barcode }}
+                                </div>
+                                <p class="text-xs text-muted-foreground">
+                                    Kosongkan untuk generate otomatis
+                                </p>
                             </div>
 
                             <!-- Description -->

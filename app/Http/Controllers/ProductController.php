@@ -21,7 +21,8 @@ class ProductController extends Controller
         $products = Product::with('category')
             ->when(request('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
             })
             ->when(request('category_id'), function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);
@@ -66,7 +67,16 @@ class ProductController extends Controller
     {
         Gate::authorize('manage_products');
 
-        Product::create($data->toArray());
+        // Create product first to get ID
+        $productData = $data->toArray();
+        $product = Product::create($productData);
+
+        // Generate barcode if not provided
+        if (empty($productData['barcode'])) {
+            $product->update([
+                'barcode' => $product->generateBarcode()
+            ]);
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil ditambahkan.');
@@ -108,29 +118,52 @@ class ProductController extends Controller
     {
         Gate::authorize('manage_products');
 
-        $product->update($data->toArray());
+        $updateData = $data->toArray();
+
+        // Generate barcode if not provided and product doesn't have one
+        if (empty($updateData['barcode']) && empty($product->barcode)) {
+            $updateData['barcode'] = $product->generateBarcode();
+        }
+
+        $product->update($updateData);
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
-    /**
+        /**
      * Remove the specified product from storage.
      */
     public function destroy(Product $product)
     {
         Gate::authorize('manage_products');
 
-        // Check if product has transaction items
-        if ($product->transactionItems()->count() > 0) {
-            return redirect()->route('products.index')
-                ->with('error', 'Produk tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
-        }
-
         $product->delete();
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil dihapus.');
+    }
+
+    /**
+     * Search product by barcode for POS
+     */
+    public function searchByBarcode(string $barcode)
+    {
+        Gate::authorize('manage_products');
+
+        $product = Product::findByBarcode($barcode);
+
+        if ($product) {
+            return response()->json([
+                'success' => true,
+                'product' => ProductData::from($product->load('category'))
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Product not found'
+        ], 404);
     }
 
     /**

@@ -10,6 +10,7 @@ class ProductData extends Data
     public function __construct(
         public ?int $id,
         public string $name,
+        public ?string $barcode,
         public ?string $description,
         public string $price,
         public ?string $image_path,
@@ -24,8 +25,16 @@ class ProductData extends Data
 
     public static function rules(?ValidationContext $context = null): array
     {
+        $productId = $context?->payload['id'] ?? null;
+
         return [
             'name' => ['required', 'string', 'max:255'],
+            'barcode' => [
+                'nullable',
+                'string',
+                'max:50',
+                'unique:products,barcode' . ($productId ? ",$productId" : '')
+            ],
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'numeric', 'min:0'],
             'image_path' => ['nullable', 'string', 'max:500'],
@@ -39,6 +48,7 @@ class ProductData extends Data
     {
         return [
             'name' => 'Nama Produk',
+            'barcode' => 'Kode Barcode',
             'description' => 'Deskripsi',
             'price' => 'Harga',
             'image_path' => 'Path Gambar',

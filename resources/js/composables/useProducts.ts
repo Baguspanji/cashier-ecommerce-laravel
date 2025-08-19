@@ -4,6 +4,7 @@ import { ref } from 'vue'
 export interface Product {
     id: number
     name: string
+    barcode?: string
     description?: string
     category_id: number
     category: {
@@ -21,6 +22,7 @@ export interface Product {
 
 export interface ProductData {
     name: string
+    barcode?: string
     description?: string
     category_id: number
     price: number
