@@ -24,9 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('products.toggle-status');
 
     // Transactions
-    Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show']);
     Route::get('transactions/daily-report', [TransactionController::class, 'dailyReport'])
         ->name('transactions.daily-report');
+    Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show']);
     Route::patch('transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])
         ->name('transactions.cancel');
 
@@ -41,5 +41,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('stock.bulk-adjustment');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

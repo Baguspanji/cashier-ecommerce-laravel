@@ -107,6 +107,7 @@ const getUniqueProducts = () => {
 </script>
 
 <template>
+
     <Head title="Pergerakan Stok" />
 
     <AppLayout>
@@ -114,54 +115,101 @@ const getUniqueProducts = () => {
             <!-- Header -->
             <AppPageHeader title="Pergerakan Stok" description="Lihat dan kelola pergerakan inventori">
                 <template #actions>
-                    <Button
-                        variant="outline"
-                        as-child
-                    >
+                    <Button variant="outline" as-child>
                         <Link href="/stock/overview">
-                            <PackageIcon class="mr-2 h-4 w-4" />
-                            Ringkasan Stok
+                        <PackageIcon class="mr-2 h-4 w-4" />
+                        Ringkasan Stok
                         </Link>
                     </Button>
                     <Button @click="visitCreate()">
                         <PlusIcon class="mr-2 h-4 w-4" />
-                        Penyesuaian Baru
+                        Atur Stok
                     </Button>
                 </template>
             </AppPageHeader>
 
+            <!-- Summary Cards -->
+            <div class="grid gap-4 md:grid-cols-4">
+                <Card class="px-5 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
+                            <PackageIcon class="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">{{ props.movements.meta?.total || 0 }}</div>
+                            <p class="text-sm text-muted-foreground">Total Pergerakan</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card class="px-5 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                            <TrendingUpIcon class="h-8 w-8 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {{props.movements.data.filter(m => m.type === 'in').length}}
+                            </div>
+                            <p class="text-sm text-muted-foreground">Stok Masuk</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card class="px-5 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                            <TrendingDownIcon class="h-8 w-8 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-red-600 dark:text-red-400">
+                                {{props.movements.data.filter(m => m.type === 'out').length}}
+                            </div>
+                            <p class="text-sm text-muted-foreground">Stok Keluar</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card class="px-5 py-6">
+                    <div class="flex items-center gap-4">
+                        <div class="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                            <SettingsIcon class="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                                {{props.movements.data.filter(m => m.type === 'adjustment').length}}
+                            </div>
+                            <p class="text-sm text-muted-foreground">Penyesuaian</p>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
             <!-- Filters -->
             <Card>
                 <CardContent>
-                    <div class="grid gap-4 md:grid-cols-6">
+                    <div class="grid gap-4 md:grid-cols-5">
                         <!-- Search -->
                         <div class="grid gap-2">
                             <Label for="search">Cari Produk</Label>
                             <div class="relative">
-                                <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    id="search"
-                                    v-model="search"
-                                    placeholder="Nama produk..."
-                                    class="pl-10 h-10"
-                                />
+                                <SearchIcon
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input id="search" v-model="search" placeholder="Nama produk..." class="pl-10 h-10" />
                             </div>
                         </div>
 
                         <!-- Product Filter -->
-                        <div class="grid gap-2">
-                            <Label for="product">Produk</Label>
-                            <Select v-model="product">
-                                <SelectTrigger class="h-10">
+                        <div class="grid2">
+                            <Label for="product" class="mb-2">Produk</Label>
+                            <Select v-model="product" class="h-10">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Semua Produk" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Semua Produk</SelectItem>
-                                    <SelectItem
-                                        v-for="prod in getUniqueProducts()"
-                                        :key="prod.id"
-                                        :value="prod.id.toString()"
-                                    >
+                                    <SelectItem v-for="prod in getUniqueProducts()" :key="prod.id"
+                                        :value="prod.id.toString()">
                                         {{ prod.name }}
                                     </SelectItem>
                                 </SelectContent>
@@ -169,10 +217,10 @@ const getUniqueProducts = () => {
                         </div>
 
                         <!-- Type Filter -->
-                        <div class="grid gap-2">
-                            <Label for="type">Tipe Pergerakan</Label>
-                            <Select v-model="type">
-                                <SelectTrigger class="h-10">
+                        <div class="grid">
+                            <Label for="type" class="mb-2">Tipe Pergerakan</Label>
+                            <Select v-model="type" class="h-10">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Semua Tipe" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -187,29 +235,12 @@ const getUniqueProducts = () => {
                         <!-- Date Filter -->
                         <div class="grid gap-2">
                             <Label for="date">Tanggal</Label>
-                            <Input
-                                id="date"
-                                v-model="date"
-                                type="date"
-                                class="h-10"
-                            />
-                        </div>
-
-                        <!-- Clear Filters -->
-                        <div class="grid gap-2">
-                            <Label>&nbsp;</Label>
-                            <Button
-                                variant="outline"
-                                @click="search = ''; product = 'all'; type = 'all'; date = ''"
-                                class="h-10"
-                            >
-                                Reset Filter
-                            </Button>
+                            <Input id="date" v-model="date" type="date" class="h-10" />
                         </div>
 
                         <!-- Summary -->
                         <div class="grid gap-2">
-                            <Label>Total</Label>
+                            <Label>Hasil Filter</Label>
                             <div class="text-2xl font-bold">
                                 {{ props.movements.meta?.total || props.movements.data.length }} pergerakan
                             </div>
@@ -218,63 +249,6 @@ const getUniqueProducts = () => {
                 </CardContent>
             </Card>
 
-            <!-- Summary Cards -->
-            <div class="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Total Pergerakan</p>
-                                <p class="text-2xl font-bold">{{ props.movements.meta?.total || 0 }}</p>
-                            </div>
-                            <PackageIcon class="h-8 w-8 text-blue-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Stok Masuk</p>
-                                <p class="text-2xl font-bold text-green-600">
-                                    {{ props.movements.data.filter(m => m.type === 'in').length }}
-                                </p>
-                            </div>
-                            <TrendingUpIcon class="h-8 w-8 text-green-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Stok Keluar</p>
-                                <p class="text-2xl font-bold text-red-600">
-                                    {{ props.movements.data.filter(m => m.type === 'out').length }}
-                                </p>
-                            </div>
-                            <TrendingDownIcon class="h-8 w-8 text-red-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Penyesuaian</p>
-                                <p class="text-2xl font-bold text-yellow-600">
-                                    {{ props.movements.data.filter(m => m.type === 'adjustment').length }}
-                                </p>
-                            </div>
-                            <SettingsIcon class="h-8 w-8 text-yellow-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
             <!-- Movements Table -->
             <Card>
                 <CardContent>
@@ -282,7 +256,8 @@ const getUniqueProducts = () => {
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tanggal & Waktu</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tanggal & Waktu
+                                    </th>
                                     <th class="text-left py-3 px-4 font-medium text-muted-foreground">Produk</th>
                                     <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tipe</th>
                                     <th class="text-center py-3 px-4 font-medium text-muted-foreground">Jumlah</th>
@@ -292,11 +267,8 @@ const getUniqueProducts = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr
-                                    v-for="movement in props.movements.data"
-                                    :key="movement.id"
-                                    class="border-b hover:bg-muted/50"
-                                >
+                                <tr v-for="movement in props.movements.data" :key="movement.id"
+                                    class="border-b hover:bg-muted/50">
                                     <td class="py-3 px-4">
                                         <div class="text-sm">
                                             <div class="font-medium">{{ formatDate(movement.created_at) }}</div>
@@ -305,7 +277,8 @@ const getUniqueProducts = () => {
                                     <td class="py-3 px-4">
                                         <div>
                                             <div class="font-medium">{{ movement.product.name }}</div>
-                                            <div class="text-sm text-muted-foreground">{{ movement.product.category.name }}</div>
+                                            <div class="text-sm text-muted-foreground">{{ movement.product.category.name
+                                            }}</div>
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
@@ -315,14 +288,11 @@ const getUniqueProducts = () => {
                                         </Badge>
                                     </td>
                                     <td class="py-3 px-4 text-center">
-                                        <span
-                                            class="font-semibold"
-                                            :class="{
-                                                'text-green-600': movement.type === 'in',
-                                                'text-red-600': movement.type === 'out',
-                                                'text-yellow-600': movement.type === 'adjustment'
-                                            }"
-                                        >
+                                        <span class="font-semibold" :class="{
+                                            'text-green-600': movement.type === 'in',
+                                            'text-red-600': movement.type === 'out',
+                                            'text-yellow-600': movement.type === 'adjustment'
+                                        }">
                                             {{ movement.type === 'out' ? '-' : '+' }}{{ movement.quantity }} pcs
                                         </span>
                                     </td>
@@ -336,11 +306,7 @@ const getUniqueProducts = () => {
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            disabled
-                                        >
+                                        <Button variant="ghost" size="sm" disabled>
                                             <EyeIcon class="h-4 w-4 mr-1" />
                                             Lihat
                                         </Button>
@@ -351,13 +317,16 @@ const getUniqueProducts = () => {
 
                         <!-- Empty State -->
                         <div v-if="!props.movements.data.length" class="text-center py-12">
-                            <PackageIcon class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 class="text-lg font-semibold mb-2">Belum ada pergerakan stok</h3>
-                            <p class="text-muted-foreground mb-4">Mulai kelola inventori untuk melihat pergerakan di sini.</p>
-                            <Button @click="visitCreate()">
-                                <PlusIcon class="mr-2 h-4 w-4" />
-                                Buat Penyesuaian Stok
-                            </Button>
+                            <div class="space-y-2">
+                                <PackageIcon class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                <h3 class="text-lg font-semibold mb-2">Belum ada pergerakan stok</h3>
+                                <p class="text-muted-foreground mb-4">Mulai kelola inventori untuk melihat pergerakan di
+                                    sini.</p>
+                                <Button @click="visitCreate()">
+                                    <PlusIcon class="mr-2 h-4 w-4" />
+                                    Buat Penyesuaian Stok
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -370,11 +339,11 @@ const getUniqueProducts = () => {
                                 'bg-primary text-primary-foreground': link.active,
                                 'bg-secondary text-secondary-foreground hover:bg-secondary/80': !link.active
                             }">
-                            {{ link.label.replace('&laquo;', '«').replace('&raquo;', '»') }}
+                            {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
                             </Link>
                             <span v-else
                                 class="px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed bg-secondary text-secondary-foreground">
-                                {{ link.label.replace('&laquo;', '«').replace('&raquo;', '»') }}
+                                {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
                             </span>
                         </template>
                     </div>

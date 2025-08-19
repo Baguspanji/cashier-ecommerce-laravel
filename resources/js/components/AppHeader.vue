@@ -70,7 +70,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Stok',
-        href: route('stock.overview'),
+        href: route('stock.index'),
         icon: TrendingUpIcon,
     },
     {

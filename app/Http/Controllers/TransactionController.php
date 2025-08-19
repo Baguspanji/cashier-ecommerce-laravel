@@ -155,7 +155,7 @@ class TransactionController extends Controller
     {
         $date = request('date', today()->format('Y-m-d'));
 
-        $transactions = Transaction::with(['items.product'])
+        $transactions = Transaction::with(['items.product.category'])
             ->whereDate('created_at', $date)
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')

@@ -18,6 +18,8 @@ import {
     HistoryIcon,
     CheckCircleIcon
 } from 'lucide-vue-next'
+import AppPageHeader from '@/components/AppPageHeader.vue'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Props {
     products: {
@@ -104,26 +106,20 @@ const getStockStatus = (product: Product) => {
     <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight">Overview Stok</h1>
-                    <p class="text-muted-foreground">
-                        Pantau kondisi stok dan inventori toko Anda
-                    </p>
-                </div>
-                <div class="flex space-x-2">
-                    <Button variant="outline" @click="visitCreate">
-                        <PlusIcon class="mr-2 h-4 w-4" />
-                        Atur Stok
-                    </Button>
-                    <Button as-child>
+            <AppPageHeader title="Overview Stok" description="Pantau kondisi stok dan inventori toko Anda">
+                <template #actions>
+                    <Button variant="outline" as-child>
                         <Link :href="route('stock.index')">
                         <HistoryIcon class="mr-2 h-4 w-4" />
                         Riwayat Stok
                         </Link>
                     </Button>
-                </div>
-            </div>
+                    <Button @click="visitCreate">
+                        <PlusIcon class="mr-2 h-4 w-4" />
+                        Atur Stok
+                    </Button>
+                </template>
+            </AppPageHeader>
 
             <!-- Summary Cards -->
             <div class="grid gap-4 md:grid-cols-4">
@@ -185,25 +181,33 @@ const getStockStatus = (product: Product) => {
                         <!-- Category Filter -->
                         <div class="grid gap-2">
                             <Label for="category">Kategori</Label>
-                            <select id="category" v-model="categoryId"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                <option value="all">Semua Kategori</option>
-                                <option v-for="category in props.categories" :key="category.id"
-                                    :value="category.id.toString()">
-                                    {{ category.name }}
-                                </option>
-                            </select>
+                            <Select v-model="categoryId" class="h-10">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Semua Kategori" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Semua Kategori</SelectItem>
+                                    <SelectItem v-for="category in props.categories" :key="category.id"
+                                        :value="category.id.toString()">
+                                        {{ category.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <!-- Status Filter -->
                         <div class="grid gap-2">
                             <Label for="status">Status Stok</Label>
-                            <select id="status" v-model="stockStatus"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                <option value="all">Semua Status</option>
-                                <option value="low">Stok Rendah</option>
-                                <option value="out">Stok Habis</option>
-                            </select>
+                            <Select id="status" v-model="stockStatus" class="h-10">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Semua Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Semua Status</SelectItem>
+                                    <SelectItem value="low">Stok Rendah</SelectItem>
+                                    <SelectItem value="out">Stok Habis</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <!-- Summary -->
@@ -226,7 +230,9 @@ const getStockStatus = (product: Product) => {
                             <!-- Header with product info -->
                             <div class="space-y-1">
                                 <h4 class="font-medium text-sm leading-tight truncate">{{ product.name }}</h4>
-                                <p class="text-xs text-muted-foreground truncate">{{ product.category?.name || 'Tanpa Kategori' }}</p>
+                                <p class="text-xs text-muted-foreground truncate">
+                                    {{ product.category?.name || 'Tanpa Kategori' }}
+                                </p>
                             </div>
 
                             <!-- Price -->
@@ -247,7 +253,8 @@ const getStockStatus = (product: Product) => {
 
                             <!-- Actions -->
                             <div class="pt-2">
-                                <Button variant="outline" size="sm" @click="visitProductMovements(product.id)" class="w-full">
+                                <Button variant="outline" size="sm" @click="visitProductMovements(product.id)"
+                                    class="w-full">
                                     <HistoryIcon class="mr-2 h-4 w-4" />
                                     Lihat Riwayat
                                 </Button>

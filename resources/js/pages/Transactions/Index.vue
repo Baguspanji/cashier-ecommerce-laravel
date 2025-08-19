@@ -100,15 +100,11 @@ const getPaymentMethodBadge = (method: string) => {
             <!-- Header -->
             <AppPageHeader title="Transaksi" description="Kelola dan lihat semua transaksi penjualan">
                 <template #actions>
-                    <Button variant="outline" as-child>
+                    <Button as-child>
                         <Link href="/transactions/daily-report">
                         <FileTextIcon class="mr-2 h-4 w-4" />
                         Laporan Harian
                         </Link>
-                    </Button>
-                    <Button @click="visitPOS()">
-                        <PlusIcon class="mr-2 h-4 w-4" />
-                        Penjualan Baru
                     </Button>
                 </template>
             </AppPageHeader>
@@ -184,7 +180,7 @@ const getPaymentMethodBadge = (method: string) => {
             <!-- Filters -->
             <Card>
                 <CardContent>
-                    <div class="grid gap-4 md:grid-cols-5">
+                    <div class="grid gap-4 md:grid-cols-4">
                         <!-- Search -->
                         <div class="grid gap-2">
                             <Label for="search">Cari Transaksi</Label>
@@ -205,8 +201,8 @@ const getPaymentMethodBadge = (method: string) => {
                         <!-- Status Filter -->
                         <div class="grid">
                             <Label for="status" class="mb-2">Status</Label>
-                            <Select v-model="status">
-                                <SelectTrigger class="h-10">
+                            <Select v-model="status" class="h-10">
+                                <SelectTrigger>
                                     <SelectValue placeholder="Semua Status" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -216,14 +212,6 @@ const getPaymentMethodBadge = (method: string) => {
                                     <SelectItem value="cancelled">Dibatalkan</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-
-                        <!-- Clear Filters -->
-                        <div class="grid gap-2">
-                            <Label>&nbsp;</Label>
-                            <Button variant="outline" @click="search = ''; date = ''; status = 'all'" class="h-10">
-                                Reset Filter
-                            </Button>
                         </div>
 
                         <!-- Summary -->

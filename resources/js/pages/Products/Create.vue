@@ -84,8 +84,8 @@ const handleSubmit = () => {
                             <!-- Category -->
                             <div class="grid gap-2">
                                 <Label for="category">Kategori</Label>
-                                <Select v-model="form.category_id">
-                                    <SelectTrigger class="h-10">
+                                <Select v-model="form.category_id" class="h-10">
+                                    <SelectTrigger>
                                         <SelectValue placeholder="Semua Kategori" />
                                     </SelectTrigger>
                                     <SelectContent>

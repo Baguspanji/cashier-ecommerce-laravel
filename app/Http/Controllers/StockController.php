@@ -17,7 +17,7 @@ class StockController extends Controller
      */
     public function index()
     {
-        $movements = StockMovement::with(['product', 'user'])
+        $movements = StockMovement::with(['product.category', 'user'])
             ->when(request('product_id'), function ($query, $productId) {
                 $query->where('product_id', $productId);
             })
@@ -37,7 +37,7 @@ class StockController extends Controller
 
         return Inertia::render('Stock/Index', [
             'movements' => $this->mapPagination($movements, fn ($items) => StockMovementData::collect($items)),
-            'products' => $this->mapPagination($products, fn ($items) => ProductData::collect($items)),
+            'products' => $products,
             'filters' => request()->only(['product_id', 'type', 'date_from', 'date_to']),
         ]);
     }
@@ -47,10 +47,10 @@ class StockController extends Controller
      */
     public function create()
     {
-        $products = Product::orderBy('name')->get(['id', 'name', 'current_stock']);
+        $products = Product::with('category')->orderBy('name')->get();
 
         return Inertia::render('Stock/Create', [
-            'products' => $products,
+            'products' => ProductData::collect($products),
         ]);
     }
 

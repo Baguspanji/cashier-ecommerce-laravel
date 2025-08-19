@@ -23,8 +23,8 @@ class ProductData extends Data
         public int $current_stock,
         public int $minimum_stock,
         public bool $is_active = true,
-        public string $created_at,
-        public string $updated_at,
+        public ?string $created_at,
+        public ?string $updated_at,
         public ?CategoryData $category = null,
     ) {}
 
@@ -38,7 +38,6 @@ class ProductData extends Data
             'category_id' => ['required', 'exists:categories,id'],
             'current_stock' => ['required', 'integer', 'min:0'],
             'minimum_stock' => ['required', 'integer', 'min:0'],
-            'is_active' => ['boolean'],
         ];
     }
 

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import AppPageHeader from '@/components/AppPageHeader.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,9 +17,7 @@ import {
 } from '@/components/ui/select'
 import { type Transaction } from '@/composables/useTransactions'
 import {
-    ArrowLeftIcon,
-    PrinterIcon,
-    DownloadIcon,
+    FileTextIcon,
     CalendarIcon,
     DollarSignIcon,
     ReceiptIcon,
@@ -122,21 +121,12 @@ const formatDate = (date: string) => {
 
 const getPaymentMethodLabel = (method: string) => {
     const labels: Record<string, string> = {
-        'cash': 'Cash',
-        'debit': 'Debit Card',
-        'credit': 'Credit Card',
+        'cash': 'Tunai',
+        'debit': 'Kartu Debit',
+        'credit': 'Kartu Kredit',
         'e-wallet': 'E-Wallet'
     }
     return labels[method] || method
-}
-
-const printReport = () => {
-    window.print()
-}
-
-const exportReport = () => {
-    // This would typically export to CSV or PDF
-    console.log('Export report functionality would be implemented here')
 }
 
 // Watch for date changes
@@ -146,87 +136,31 @@ watch(selectedDate, () => {
 </script>
 
 <template>
-    <Head title="Daily Sales Report" />
+
+    <Head title="Laporan Harian" />
 
     <AppLayout>
-        <div class="container mx-auto px-4 py-6">
+        <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        as-child
-                        class="gap-2"
-                    >
+            <AppPageHeader title="Laporan Harian"
+                :description="`Laporan penjualan untuk tanggal ${formatDate(selectedDate)}`">
+                <template #actions>
+                    <Button as-child>
                         <Link href="/transactions">
-                            <ArrowLeftIcon class="h-4 w-4" />
-                            Back to Transactions
+                        <FileTextIcon class="mr-2 h-4 w-4" />
+                        Laporan Transaksi
                         </Link>
                     </Button>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Daily Sales Report</h1>
-                        <p class="text-sm text-gray-500">{{ formatDate(selectedDate) }}</p>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="exportReport"
-                        class="gap-2"
-                    >
-                        <DownloadIcon class="h-4 w-4" />
-                        Export
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="printReport"
-                        class="gap-2"
-                    >
-                        <PrinterIcon class="h-4 w-4" />
-                        Print
-                    </Button>
-                </div>
-            </div>
-
-            <!-- Filters -->
-            <Card class="mb-6">
-                <CardContent class="p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="space-y-2">
-                            <Label for="date">Report Date</Label>
-                            <Input
-                                id="date"
-                                v-model="selectedDate"
-                                type="date"
-                            />
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="report-type">Report Type</Label>
-                            <Select v-model="reportType">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select report type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="summary">Summary</SelectItem>
-                                    <SelectItem value="detailed">Detailed</SelectItem>
-                                    <SelectItem value="products">Products</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                </template>
+            </AppPageHeader>
 
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid gap-4 md:grid-cols-4">
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Sales</p>
+                                <p class="text-sm font-medium text-muted-foreground">Total Penjualan</p>
                                 <p class="text-2xl font-bold">{{ dailyStats.totalSales }}</p>
                             </div>
                             <ReceiptIcon class="h-8 w-8 text-blue-500" />
@@ -235,10 +169,10 @@ watch(selectedDate, () => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Total Revenue</p>
+                                <p class="text-sm font-medium text-muted-foreground">Total Pendapatan</p>
                                 <p class="text-2xl font-bold">{{ formatCurrency(dailyStats.totalRevenue) }}</p>
                             </div>
                             <DollarSignIcon class="h-8 w-8 text-green-500" />
@@ -247,10 +181,10 @@ watch(selectedDate, () => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Items Sold</p>
+                                <p class="text-sm font-medium text-muted-foreground">Item Terjual</p>
                                 <p class="text-2xl font-bold">{{ dailyStats.totalQuantity }}</p>
                             </div>
                             <ShoppingCartIcon class="h-8 w-8 text-purple-500" />
@@ -259,10 +193,10 @@ watch(selectedDate, () => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Average Sale</p>
+                                <p class="text-sm font-medium text-muted-foreground">Rata-rata Penjualan</p>
                                 <p class="text-2xl font-bold">{{ formatCurrency(dailyStats.averageSale) }}</p>
                             </div>
                             <TrendingUpIcon class="h-8 w-8 text-orange-500" />
@@ -271,26 +205,56 @@ watch(selectedDate, () => {
                 </Card>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Filters -->
+            <Card>
+                <CardContent>
+                    <div class="grid gap-4 md:grid-cols-3">
+                        <div class="grid gap-2">
+                            <Label for="date">Tanggal Laporan</Label>
+                            <Input id="date" v-model="selectedDate" type="date" class="h-10" />
+                        </div>
+
+                        <div class="grid">
+                            <Label for="report-type" class="mb-2">Jenis Laporan</Label>
+                            <Select v-model="reportType" class="h-10">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih jenis laporan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="summary">Ringkasan</SelectItem>
+                                    <SelectItem value="detailed">Detail</SelectItem>
+                                    <SelectItem value="products">Produk</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label>Total Transaksi</Label>
+                            <div class="text-2xl font-bold">
+                                {{ dailyStats.totalSales }} transaksi
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div class="grid gap-6 lg:grid-cols-2">
                 <!-- Payment Methods -->
                 <Card>
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2">
                             <PieChartIcon class="h-5 w-5" />
-                            Payment Methods
+                            Metode Pembayaran
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-3">
-                            <div
-                                v-for="(amount, method) in dailyStats.paymentMethods"
-                                :key="method"
-                                class="flex justify-between items-center"
-                            >
+                            <div v-for="(amount, method) in dailyStats.paymentMethods" :key="method"
+                                class="flex justify-between items-center">
                                 <span class="font-medium">{{ getPaymentMethodLabel(method) }}</span>
                                 <div class="text-right">
                                     <div class="font-semibold">{{ formatCurrency(amount) }}</div>
-                                    <div class="text-sm text-gray-500">
+                                    <div class="text-sm text-muted-foreground">
                                         {{ Math.round((amount / dailyStats.totalRevenue) * 100) }}%
                                     </div>
                                 </div>
@@ -304,18 +268,15 @@ watch(selectedDate, () => {
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2">
                             <CalendarIcon class="h-5 w-5" />
-                            Hourly Sales
+                            Penjualan Per Jam
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div class="space-y-2 max-h-64 overflow-y-auto">
-                            <div
-                                v-for="(data, hour) in dailyStats.hourlyBreakdown"
-                                :key="hour"
-                                class="grid grid-cols-3 gap-2 text-sm"
-                            >
+                            <div v-for="(data, hour) in dailyStats.hourlyBreakdown" :key="hour"
+                                class="grid grid-cols-3 gap-2 text-sm">
                                 <span class="font-medium">{{ hour }}</span>
-                                <span class="text-center">{{ data.sales }} sales</span>
+                                <span class="text-center">{{ data.sales }} transaksi</span>
                                 <span class="text-right font-semibold">{{ formatCurrency(data.revenue) }}</span>
                             </div>
                         </div>
@@ -324,46 +285,44 @@ watch(selectedDate, () => {
             </div>
 
             <!-- Top Products -->
-            <Card class="mb-6">
+            <Card>
                 <CardHeader>
-                    <CardTitle>Top Selling Products</CardTitle>
+                    <CardTitle>Produk Terlaris</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left py-2 font-medium text-gray-500">Rank</th>
-                                    <th class="text-left py-2 font-medium text-gray-500">Product</th>
-                                    <th class="text-left py-2 font-medium text-gray-500">Category</th>
-                                    <th class="text-center py-2 font-medium text-gray-500">Qty Sold</th>
-                                    <th class="text-right py-2 font-medium text-gray-500">Revenue</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Peringkat</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Produk</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Kategori</th>
+                                    <th class="text-center py-3 px-4 font-medium text-muted-foreground">Qty Terjual</th>
+                                    <th class="text-right py-3 px-4 font-medium text-muted-foreground">Pendapatan</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr
-                                    v-for="(product, index) in dailyStats.topProducts"
-                                    :key="product.name"
-                                    class="border-b"
-                                >
-                                    <td class="py-3">
+                                <tr v-for="(product, index) in dailyStats.topProducts" :key="product.name"
+                                    class="border-b hover:bg-muted/50">
+                                    <td class="py-3 px-4">
                                         <Badge :variant="index < 3 ? 'default' : 'secondary'">
                                             #{{ index + 1 }}
                                         </Badge>
                                     </td>
-                                    <td class="py-3 font-medium">{{ product.name }}</td>
-                                    <td class="py-3 text-gray-600">{{ product.category }}</td>
-                                    <td class="py-3 text-center font-semibold">{{ product.quantity }} pcs</td>
-                                    <td class="py-3 text-right font-semibold">{{ formatCurrency(product.revenue) }}</td>
+                                    <td class="py-3 px-4 font-medium">{{ product.name }}</td>
+                                    <td class="py-3 px-4 text-muted-foreground">{{ product.category }}</td>
+                                    <td class="py-3 px-4 text-center font-semibold">{{ product.quantity }} pcs</td>
+                                    <td class="py-3 px-4 text-right font-semibold">{{ formatCurrency(product.revenue) }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
 
                         <!-- Empty State -->
-                        <div v-if="dailyStats.topProducts.length === 0" class="text-center py-8">
-                            <ShoppingCartIcon class="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">No sales found</h3>
-                            <p class="text-gray-500">No transactions found for the selected date.</p>
+                        <div v-if="dailyStats.topProducts.length === 0" class="text-center py-12">
+                            <ShoppingCartIcon class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 class="text-lg font-semibold mb-2">Tidak ada penjualan</h3>
+                            <p class="text-muted-foreground">Tidak ditemukan transaksi untuk tanggal yang dipilih.</p>
                         </div>
                     </div>
                 </CardContent>
@@ -372,41 +331,49 @@ watch(selectedDate, () => {
             <!-- Detailed Transactions -->
             <Card v-if="reportType === 'detailed'">
                 <CardHeader>
-                    <CardTitle>All Transactions</CardTitle>
+                    <CardTitle>Semua Transaksi</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left py-2 font-medium text-gray-500">Time</th>
-                                    <th class="text-left py-2 font-medium text-gray-500">Transaction #</th>
-                                    <th class="text-left py-2 font-medium text-gray-500">Items</th>
-                                    <th class="text-left py-2 font-medium text-gray-500">Payment</th>
-                                    <th class="text-right py-2 font-medium text-gray-500">Amount</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Waktu</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">No. Transaksi</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Items</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Pembayaran</th>
+                                    <th class="text-right py-3 px-4 font-medium text-muted-foreground">Jumlah</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr
-                                    v-for="transaction in filteredTransactions"
-                                    :key="transaction.id"
-                                    class="border-b"
-                                >
-                                    <td class="py-2">
+                                <tr v-for="transaction in filteredTransactions" :key="transaction.id"
+                                    class="border-b hover:bg-muted/50">
+                                    <td class="py-3 px-4">
                                         {{ new Date(transaction.created_at).toLocaleTimeString('id-ID', {
                                             hour: '2-digit',
                                             minute: '2-digit'
                                         }) }}
                                     </td>
-                                    <td class="py-2 font-mono">{{ transaction.transaction_number }}</td>
-                                    <td class="py-2">{{ transaction.items.length }} items</td>
-                                    <td class="py-2">{{ getPaymentMethodLabel(transaction.payment_method) }}</td>
-                                    <td class="py-2 text-right font-semibold">
+                                    <td class="py-3 px-4 font-mono">
+                                        #{{ String(transaction.transaction_number).padStart(6, '0') }}
+                                    </td>
+                                    <td class="py-3 px-4">{{ transaction.items.length }} items</td>
+                                    <td class="py-3 px-4">
+                                        <Badge>{{ getPaymentMethodLabel(transaction.payment_method) }}</Badge>
+                                    </td>
+                                    <td class="py-3 px-4 text-right font-semibold">
                                         {{ formatCurrency(parseFloat(transaction.total_amount)) }}
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+
+                        <!-- Empty State -->
+                        <div v-if="filteredTransactions.length === 0" class="text-center py-12">
+                            <ReceiptIcon class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 class="text-lg font-semibold mb-2">Tidak ada transaksi</h3>
+                            <p class="text-muted-foreground">Tidak ditemukan transaksi untuk tanggal yang dipilih.</p>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -416,14 +383,13 @@ watch(selectedDate, () => {
 
 <style>
 @media print {
-    .container {
-        max-width: none !important;
-        margin: 0 !important;
-        padding: 20px !important;
+    .space-y-6>*+* {
+        margin-top: 0 !important;
     }
 
-    .flex.items-center.justify-between.mb-6 {
-        display: none !important;
+    .space-y-6 {
+        margin: 0 !important;
+        padding: 20px !important;
     }
 
     button {

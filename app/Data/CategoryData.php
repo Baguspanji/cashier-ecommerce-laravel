@@ -13,6 +13,7 @@ class CategoryData extends Data
         #[Required, StringType]
         public string $name,
         public ?string $description = null,
+        public ?int $products_count = null
     ) {}
 
     public static function attributes(...$args): array
