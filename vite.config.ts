@@ -6,27 +6,53 @@ import { configDefaults } from 'vitest/config';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: ['resources/js/app.ts'],
-            ssr: 'resources/js/ssr.ts',
-            refresh: true,
-        }),
-        tailwindcss(),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
+export default defineConfig(({ mode }) => {
+    const isProduction = mode === 'production';
+
+    return {
+        plugins: [
+            laravel({
+                input: ['resources/js/app.ts', 'resources/css/app.css'],
+                ssr: 'resources/js/ssr.ts',
+                refresh: true,
+            }),
+            tailwindcss(),
+            vue({
+                template: {
+                    transformAssetUrls: {
+                        base: null,
+                        includeAbsolute: false,
+                    },
                 },
-            },
-        }),
+            }),
         VitePWA({
             registerType: 'autoUpdate',
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+                // Tambahkan strategi caching untuk single bundle
                 runtimeCaching: [
+                    {
+                        urlPattern: /\/build\/assets\/app\..+\.js$/,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'app-js-cache',
+                            expiration: {
+                                maxEntries: 5,
+                                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 hari
+                            }
+                        }
+                    },
+                    {
+                        urlPattern: /\/build\/assets\/app\..+\.css$/,
+                        handler: 'CacheFirst',
+                        options: {
+                            cacheName: 'app-css-cache',
+                            expiration: {
+                                maxEntries: 5,
+                                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 hari
+                            }
+                        }
+                    },
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
                         handler: 'CacheFirst',
@@ -94,15 +120,37 @@ export default defineConfig({
             }
         })
     ],
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, 'resources/js'),
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, 'resources/js'),
+            },
         },
-    },
-    test: {
-        globals: true,
-        environment: 'jsdom',
-        setupFiles: ['resources/js/tests/setup.ts'],
-        exclude: [...configDefaults.exclude, 'tests/**'],
-    },
+        build: isProduction ? {
+            rollupOptions: {
+                output: {
+                    manualChunks: () => 'app', // Paksa semua JS menjadi satu chunk hanya di production
+                    assetFileNames: (assetInfo) => {
+                        // Gabungkan semua CSS menjadi satu file
+                        if (assetInfo.name?.endsWith('.css')) {
+                            return 'assets/app.[hash].css';
+                        }
+                        return 'assets/[name].[hash].[ext]';
+                    },
+                    chunkFileNames: 'assets/app.[hash].js',
+                    entryFileNames: 'assets/app.[hash].js'
+                }
+            },
+            cssCodeSplit: true, // Biarkan CSS terpisah untuk PWA
+            assetsInlineLimit: 0, // Jangan inline assets kecil
+        } : {
+            // Development: gunakan code splitting normal
+            rollupOptions: {},
+        },
+        test: {
+            globals: true,
+            environment: 'jsdom',
+            setupFiles: ['resources/js/tests/setup.ts'],
+            exclude: [...configDefaults.exclude, 'tests/**'],
+        },
+    };
 });
