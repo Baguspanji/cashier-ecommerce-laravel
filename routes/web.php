@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -23,10 +24,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])
         ->name('products.toggle-status');
 
-    // Transactions
+    // Transactions (Reports Page)
+    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/daily-report', [TransactionController::class, 'dailyReport'])
         ->name('transactions.daily-report');
-    Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show']);
+    Route::post('transactions/export', [TransactionController::class, 'exportReport'])
+        ->name('transactions.export');
+    Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::get('transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::patch('transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])
         ->name('transactions.cancel');
 
@@ -39,7 +44,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('stock.product-movements');
     Route::post('stock/bulk-adjustment', [StockController::class, 'bulkAdjustment'])
         ->name('stock.bulk-adjustment');
+
+    // User Management
+    Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

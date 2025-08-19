@@ -3,12 +3,13 @@
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('authenticated user can view categories index', function () {
-    $user = User::factory()->create();
+it('admin can view categories index', function () {
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
     Category::factory()->count(3)->create();
 
     $response = $this->actingAs($user)
@@ -17,8 +18,8 @@ it('authenticated user can view categories index', function () {
     $response->assertOk();
 });
 
-test('user can create a category', function () {
-    $user = User::factory()->create();
+test('admin can create a category', function () {
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
 
     $categoryData = [
         'name' => 'Electronics',
@@ -34,8 +35,8 @@ test('user can create a category', function () {
     $this->assertDatabaseHas('categories', $categoryData);
 });
 
-test('user can update a category', function () {
-    $user = User::factory()->create();
+test('admin can update a category', function () {
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
     $category = Category::factory()->create();
 
     $updatedData = [
@@ -55,8 +56,8 @@ test('user can update a category', function () {
     ]);
 });
 
-test('user cannot delete category with products', function () {
-    $user = User::factory()->create();
+test('admin cannot delete category with products', function () {
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
     $category = Category::factory()->create();
     Product::factory()->create(['category_id' => $category->id]);
 
@@ -69,8 +70,8 @@ test('user cannot delete category with products', function () {
     $this->assertDatabaseHas('categories', ['id' => $category->id]);
 });
 
-test('user can delete category without products', function () {
-    $user = User::factory()->create();
+test('admin can delete category without products', function () {
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
     $category = Category::factory()->create();
 
     $response = $this->actingAs($user)
@@ -83,7 +84,7 @@ test('user can delete category without products', function () {
 });
 
 test('category name is required', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['role' => UserRole::Admin->value]);
 
     $response = $this->actingAs($user)
         ->post(route('categories.store'), [
@@ -97,4 +98,36 @@ test('guest cannot access categories', function () {
     $response = $this->get(route('categories.index'));
 
     $response->assertRedirect(route('login'));
+});
+
+test('manager can manage categories', function () {
+    $user = User::factory()->create(['role' => UserRole::Manager->value]);
+
+    $response = $this->actingAs($user)
+        ->get(route('categories.index'));
+
+    $response->assertOk();
+});
+
+test('cashier cannot manage categories', function () {
+    $user = User::factory()->create(['role' => UserRole::Cashier->value]);
+
+    $response = $this->actingAs($user)
+        ->get(route('categories.index'));
+
+    $response->assertForbidden();
+});
+
+test('cashier cannot create category', function () {
+    $user = User::factory()->create(['role' => UserRole::Cashier->value]);
+
+    $categoryData = [
+        'name' => 'Test Category',
+        'description' => 'Test description',
+    ];
+
+    $response = $this->actingAs($user)
+        ->post(route('categories.store'), $categoryData);
+
+    $response->assertForbidden();
 });

@@ -8,6 +8,7 @@ use App\Data\StockMovementData;
 use App\Models\Product;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class StockController extends Controller
@@ -17,6 +18,8 @@ class StockController extends Controller
      */
     public function index()
     {
+        Gate::authorize('manage_stock');
+
         $movements = StockMovement::with(['product.category', 'user'])
             ->when(request('product_id'), function ($query, $productId) {
                 $query->where('product_id', $productId);
@@ -47,6 +50,8 @@ class StockController extends Controller
      */
     public function create()
     {
+        Gate::authorize('manage_stock');
+
         $products = Product::with('category')->orderBy('name')->get();
 
         return Inertia::render('Stock/Create', [
@@ -59,6 +64,8 @@ class StockController extends Controller
      */
     public function store(StockMovementData $data)
     {
+        Gate::authorize('manage_stock');
+
         $product = Product::findOrFail($data->product_id);
 
         // For 'out' movements, check if sufficient stock is available
@@ -91,6 +98,8 @@ class StockController extends Controller
      */
     public function overview()
     {
+        Gate::authorize('manage_stock');
+
         $products = Product::with('category')
             ->when(request('category_id'), function ($query, $categoryId) {
                 $query->where('category_id', $categoryId);
@@ -128,6 +137,8 @@ class StockController extends Controller
      */
     public function productMovements(Product $product)
     {
+        Gate::authorize('manage_stock');
+
         $movements = $product->stockMovements()
             ->with('user')
             ->orderBy('created_at', 'desc')
@@ -144,6 +155,8 @@ class StockController extends Controller
      */
     public function bulkAdjustment(BulkStockAdjustmentData $data)
     {
+        Gate::authorize('manage_stock');
+
         foreach ($data->adjustments as $adjustment) {
             $product = Product::findOrFail($adjustment['product_id']);
             $currentStock = $product->current_stock;

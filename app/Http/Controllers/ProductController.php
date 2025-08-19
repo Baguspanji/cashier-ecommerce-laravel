@@ -6,6 +6,7 @@ use App\Data\CategoryData;
 use App\Data\ProductData;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -15,6 +16,8 @@ class ProductController extends Controller
      */
     public function index()
     {
+        Gate::authorize('manage_products');
+
         $products = Product::with('category')
             ->when(request('search'), function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
@@ -47,6 +50,8 @@ class ProductController extends Controller
      */
     public function create()
     {
+        Gate::authorize('manage_products');
+
         $categories = Category::orderBy('name')->get();
 
         return Inertia::render('Products/Create', [
@@ -59,6 +64,8 @@ class ProductController extends Controller
      */
     public function store(ProductData $data)
     {
+        Gate::authorize('manage_products');
+
         Product::create($data->toArray());
 
         return redirect()->route('products.index')
@@ -70,6 +77,8 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
+        Gate::authorize('manage_products');
+
         $product->load('category', 'transactionItems', 'stockMovements.user');
 
         return Inertia::render('Products/Show', [
@@ -82,6 +91,8 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
+        Gate::authorize('manage_products');
+
         $categories = Category::orderBy('name')->get();
 
         return Inertia::render('Products/Edit', [
@@ -95,6 +106,8 @@ class ProductController extends Controller
      */
     public function update(ProductData $data, Product $product)
     {
+        Gate::authorize('manage_products');
+
         $product->update($data->toArray());
 
         return redirect()->route('products.index')
@@ -106,6 +119,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        Gate::authorize('manage_products');
+
         // Check if product has transaction items
         if ($product->transactionItems()->count() > 0) {
             return redirect()->route('products.index')
@@ -123,6 +138,8 @@ class ProductController extends Controller
      */
     public function toggleStatus(Product $product)
     {
+        Gate::authorize('manage_products');
+
         $product->update(['is_active' => ! $product->is_active]);
 
         $status = $product->is_active ? 'diaktifkan' : 'dinonaktifkan';

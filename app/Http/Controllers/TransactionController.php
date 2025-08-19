@@ -9,36 +9,131 @@ use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Transaction;
 use App\Models\TransactionItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class TransactionController extends Controller
 {
     /**
-     * Display a listing of transactions.
+     * Display a listing of transactions (Reports Page).
      */
-    public function index()
+    public function index(Request $request)
     {
+        Gate::authorize('view_reports');
+
+        $request->validate([
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'period' => ['nullable', 'in:today,yesterday,this_week,last_week,this_month,last_month,this_year,custom'],
+            'payment_method' => ['nullable', 'string'],
+            'user_id' => ['nullable', 'integer'],
+        ]);
+
+        $period = $request->get('period', 'this_month');
+        $dateRange = $this->getDateRange($period, $request->start_date, $request->end_date);
+
         $transactions = Transaction::with(['user', 'items.product'])
-            ->when(request('search'), function ($query, $search) {
+            ->whereBetween('created_at', $dateRange)
+            ->when($request->payment_method, function ($query, $paymentMethod) {
+                $query->where('payment_method', $paymentMethod);
+            })
+            ->when($request->user_id, function ($query, $userId) {
+                $query->where('user_id', $userId);
+            })
+            ->when($request->search, function ($query, $search) {
                 $query->where('transaction_number', 'like', "%{$search}%");
-            })
-            ->when(request('status'), function ($query, $status) {
-                $query->where('status', $status);
-            })
-            ->when(request('date_from'), function ($query, $dateFrom) {
-                $query->whereDate('created_at', '>=', $dateFrom);
-            })
-            ->when(request('date_to'), function ($query, $dateTo) {
-                $query->whereDate('created_at', '<=', $dateTo);
             })
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
+        // Summary statistics
+        $allTransactions = Transaction::whereBetween('created_at', $dateRange)
+            ->when($request->payment_method, function ($query, $paymentMethod) {
+                $query->where('payment_method', $paymentMethod);
+            })
+            ->when($request->user_id, function ($query, $userId) {
+                $query->where('user_id', $userId);
+            })
+            ->with('items')
+            ->get();
+
+        $summary = [
+            'total_transactions' => $allTransactions->count(),
+            'total_revenue' => $allTransactions->sum('total_amount'),
+            'total_items_sold' => $allTransactions->sum(fn ($t) => $t->items->sum('quantity')),
+            'average_transaction' => $allTransactions->count() > 0 ? $allTransactions->avg('total_amount') : 0,
+        ];
+
+        // Payment method breakdown
+        $paymentMethods = $allTransactions->groupBy('payment_method')
+            ->map(function ($group, $method) {
+                return [
+                    'method' => $method,
+                    'count' => $group->count(),
+                    'total' => $group->sum('total_amount'),
+                    'percentage' => 0, // Will be calculated in frontend
+                ];
+            })->values();
+
+        // Top products
+        $topProducts = $allTransactions->flatMap->items
+            ->groupBy('product_id')
+            ->map(function ($items) {
+                $product = $items->first()->product;
+
+                return [
+                    'product_name' => $product ? $product->name : 'Produk Terhapus',
+                    'quantity_sold' => $items->sum('quantity'),
+                    'revenue' => $items->sum('subtotal'),
+                ];
+            })
+            ->sortByDesc('quantity_sold')
+            ->take(10)
+            ->values();
+
+        // Daily sales chart data
+        $dailySales = $allTransactions
+            ->groupBy(fn ($t) => $t->created_at->format('Y-m-d'))
+            ->map(function ($dayTransactions, $date) {
+                return [
+                    'date' => $date,
+                    'total_amount' => $dayTransactions->sum('total_amount'),
+                    'transaction_count' => $dayTransactions->count(),
+                ];
+            })
+            ->sortBy('date')
+            ->values();
+
+        // Get users for filter
+        $users = \App\Models\User::select('id', 'name')->orderBy('name')->get();
+
         return Inertia::render('Transactions/Index', [
             'transactions' => $this->mapPagination($transactions, fn ($items) => TransactionData::collect($items)),
-            'filters' => request()->only(['search', 'status', 'date_from', 'date_to']),
+            'summary' => $summary,
+            'payment_methods' => $paymentMethods,
+            'top_products' => $topProducts,
+            'daily_sales' => $dailySales,
+            'users' => $users,
+            'filters' => [
+                'period' => $period,
+                'start_date' => $dateRange[0]->format('Y-m-d'),
+                'end_date' => $dateRange[1]->format('Y-m-d'),
+                'payment_method' => $request->payment_method,
+                'user_id' => $request->user_id,
+                'search' => $request->search,
+            ],
+            'available_payment_methods' => [
+                'cash' => 'Tunai',
+                'debit_card' => 'Kartu Debit',
+                'credit_card' => 'Kartu Kredit',
+                'bank_transfer' => 'Transfer Bank',
+                'e_wallet' => 'E-Wallet',
+                'qris' => 'QRIS',
+            ],
         ]);
     }
 
@@ -182,6 +277,121 @@ class TransactionController extends Controller
             'summary' => $summary,
             'date' => $date,
         ]);
+    }
+
+    /**
+     * Export transaction report
+     */
+    public function exportReport(Request $request)
+    {
+        Gate::authorize('export_reports');
+
+        $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'format' => ['required', 'in:pdf,excel'],
+        ]);
+
+        $dateRange = [
+            Carbon::parse($request->start_date)->startOfDay(),
+            Carbon::parse($request->end_date)->endOfDay(),
+        ];
+
+        $transactions = Transaction::whereBetween('created_at', $dateRange)
+            ->with(['items.product', 'user'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        if ($request->get('format') === 'pdf') {
+            return $this->exportPdf($transactions, $dateRange);
+        }
+
+        return $this->exportExcel($transactions, $dateRange);
+    }
+
+    /**
+     * Get date range based on period
+     */
+    private function getDateRange(string $period, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $now = Carbon::now();
+
+        return match ($period) {
+            'today' => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
+            'yesterday' => [$now->copy()->subDay()->startOfDay(), $now->copy()->subDay()->endOfDay()],
+            'this_week' => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
+            'last_week' => [$now->copy()->subWeek()->startOfWeek(), $now->copy()->subWeek()->endOfWeek()],
+            'this_month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
+            'last_month' => [$now->copy()->subMonth()->startOfMonth(), $now->copy()->subMonth()->endOfMonth()],
+            'this_year' => [$now->copy()->startOfYear(), $now->copy()->endOfYear()],
+            'custom' => [
+                $startDate ? Carbon::parse($startDate)->startOfDay() : $now->copy()->startOfMonth(),
+                $endDate ? Carbon::parse($endDate)->endOfDay() : $now->copy()->endOfMonth(),
+            ],
+            default => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
+        };
+    }
+
+    /**
+     * Export data to PDF
+     */
+    private function exportPdf($transactions, $dateRange)
+    {
+        return response()->streamDownload(function () use ($transactions, $dateRange) {
+            echo "LAPORAN TRANSAKSI\n";
+            echo "================\n";
+            echo "Periode: {$dateRange[0]->format('d/m/Y')} - {$dateRange[1]->format('d/m/Y')}\n";
+            echo 'Tanggal Cetak: '.now()->format('d/m/Y H:i')."\n\n";
+
+            $totalAmount = 0;
+            foreach ($transactions as $transaction) {
+                echo "No. Transaksi: {$transaction->transaction_number}\n";
+                echo "Tanggal: {$transaction->created_at->format('d/m/Y H:i')}\n";
+                echo "Kasir: {$transaction->user->name}\n";
+                echo "Metode Bayar: {$transaction->payment_method}\n";
+                echo 'Total: Rp '.number_format($transaction->total_amount, 0, ',', '.')."\n";
+                echo "------------------------\n";
+                $totalAmount += $transaction->total_amount;
+            }
+
+            echo "\nRINGKASAN:\n";
+            echo 'Total Transaksi: '.$transactions->count()."\n";
+            echo 'Total Pendapatan: Rp '.number_format($totalAmount, 0, ',', '.')."\n";
+        }, 'laporan-transaksi-'.now()->format('Y-m-d').'.txt');
+    }
+
+    /**
+     * Export data to Excel (CSV format)
+     */
+    private function exportExcel($transactions, $dateRange)
+    {
+        return response()->streamDownload(function () use ($transactions) {
+            $output = fopen('php://output', 'w');
+
+            // Headers
+            fputcsv($output, [
+                'No. Transaksi',
+                'Tanggal',
+                'Kasir',
+                'Total',
+                'Metode Pembayaran',
+                'Status',
+            ]);
+
+            // Data
+            foreach ($transactions as $transaction) {
+                fputcsv($output, [
+                    $transaction->transaction_number,
+                    $transaction->created_at->format('d/m/Y H:i'),
+                    $transaction->user->name,
+                    $transaction->total_amount,
+                    $transaction->payment_method,
+                    $transaction->status,
+                ]);
+            }
+
+            fclose($output);
+        }, 'laporan-transaksi-'.now()->format('Y-m-d').'.csv');
     }
 
     /**
