@@ -13,20 +13,19 @@ use Spatie\LaravelData\Data;
 class TransactionData extends Data
 {
     public function __construct(
-        #[Required, IntegerType]
+        public ?int $id,
         public int $user_id,
-        #[Required, Numeric, Min(0)]
         public float $total_amount,
-        #[Required, In(['cash', 'debit', 'credit', 'e-wallet'])]
         public string $payment_method,
-        #[Required, Numeric, Min(0)]
         public float $payment_amount,
-        #[Numeric, Min(0)]
         public float $change_amount = 0.0,
-        #[In(['pending', 'completed', 'cancelled'])]
         public string $status = 'completed',
-        #[Max(1000)]
         public ?string $notes = null,
         public ?string $transaction_number = null,
+        public string $created_at,
+        public string $updated_at,
+        /** @var TransactionItemData[] */
+        public array $items = [],
+        public ?UserData $user = null,
     ) {}
 }

@@ -131,6 +131,16 @@ const checkout = () => {
     }
 }
 
+const getPaymentMethodLabel = (method: string) => {
+    const labels: Record<string, string> = {
+        'cash': 'Tunai',
+        'debit': 'Kartu Debit',
+        'credit': 'Kartu Kredit',
+        'e-wallet': 'E-Wallet'
+    }
+    return labels[method] || method
+}
+
 const getPaymentMethodIcon = (method: string) => {
     switch (method) {
         case 'cash': return BanknoteIcon
@@ -176,7 +186,7 @@ const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
                         <CardContent>
                             <div class="space-y-2">
                                 <div>
-                                    <h4 class="font-medium text-sm leading-tight">{{ product.id }} - {{ product.name }}</h4>
+                                    <h4 class="font-medium text-sm leading-tight">{{ product.name }}</h4>
                                     <p class="text-xs text-muted-foreground">{{ product.category?.name || 'Tanpa Kategori' }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
@@ -271,7 +281,7 @@ const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
                                     @click="paymentMethod = method as any"
                                     class="flex items-center justify-center space-x-2">
                                     <component :is="getPaymentMethodIcon(method)" class="h-4 w-4" />
-                                    <span class="capitalize">{{ method }}</span>
+                                    <span>{{ getPaymentMethodLabel(method) }}</span>
                                 </Button>
                             </div>
                         </div>

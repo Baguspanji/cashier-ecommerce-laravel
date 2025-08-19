@@ -43,6 +43,18 @@ class TransactionController extends Controller
     }
 
     /**
+     * Display the specified transaction.
+     */
+    public function show(Transaction $transaction)
+    {
+        $transaction->load(['user', 'items.product.category']);
+
+        return Inertia::render('Transactions/Show', [
+            'transaction' => TransactionData::from($transaction),
+        ]);
+    }
+
+    /**
      * Show the POS (Point of Sale) interface.
      */
     public function pos()
@@ -134,18 +146,6 @@ class TransactionController extends Controller
             return redirect()->route('transactions.show', $transaction)
                 ->with('success', 'Transaksi berhasil diproses.');
         });
-    }
-
-    /**
-     * Display the specified transaction.
-     */
-    public function show(Transaction $transaction)
-    {
-        $transaction->load(['user', 'items.product']);
-
-        return Inertia::render('Transactions/Show', [
-            'transaction' => TransactionData::from($transaction),
-        ]);
     }
 
     /**

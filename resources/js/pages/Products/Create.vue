@@ -11,6 +11,7 @@ import { type Category } from '@/composables/useCategories'
 import { ArrowLeftIcon } from 'lucide-vue-next'
 import AppPageHeader from '@/components/AppPageHeader.vue'
 import { Switch } from '@/components/ui/switch'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Props {
     categories: Category[]
@@ -83,14 +84,19 @@ const handleSubmit = () => {
                             <!-- Category -->
                             <div class="grid gap-2">
                                 <Label for="category">Kategori</Label>
-                                <select id="category" v-model="form.category_id" :disabled="loading"
-                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                                    <option value="0">Pilih kategori</option>
-                                    <option v-for="category in props.categories" :key="category.id"
-                                        :value="category.id">
-                                        {{ category.name }}
-                                    </option>
-                                </select>
+                                <Select v-model="form.category_id">
+                                    <SelectTrigger class="h-10">
+                                        <SelectValue placeholder="Semua Kategori" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Semua Kategori</SelectItem>
+                                        <SelectItem v-for="category in props.categories" :key="category.id"
+                                            :value="category.id">
+                                            {{ category.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+
                                 <div v-if="errors.category_id" class="text-sm text-destructive">
                                     {{ errors.category_id }}
                                 </div>

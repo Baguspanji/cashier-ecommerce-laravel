@@ -28,14 +28,6 @@ class CategoryController extends Controller
     }
 
     /**
-     * Show the form for creating a new category.
-     */
-    public function create()
-    {
-        return Inertia::render('Categories/Create');
-    }
-
-    /**
      * Store a newly created category in storage.
      */
     public function store(CategoryData $data)
@@ -44,28 +36,6 @@ class CategoryController extends Controller
 
         return redirect()->route('categories.index')
             ->with('success', 'Kategori berhasil ditambahkan.');
-    }
-
-    /**
-     * Display the specified category.
-     */
-    public function show(Category $category)
-    {
-        $category->load('products');
-
-        return Inertia::render('Categories/Show', [
-            'category' => CategoryData::from($category),
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified category.
-     */
-    public function edit(Category $category)
-    {
-        return Inertia::render('Categories/Edit', [
-            'category' => $category,
-        ]);
     }
 
     /**

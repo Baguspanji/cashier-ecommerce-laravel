@@ -126,13 +126,6 @@ const getReferenceTypeLabel = (referenceType?: string) => {
     }
 }
 
-const stockChangeClass = (movement: StockMovement) => {
-    const change = movement.new_stock - movement.previous_stock
-    if (change > 0) return 'text-green-600'
-    if (change < 0) return 'text-red-600'
-    return 'text-gray-600'
-}
-
 const stockChangeSymbol = (movement: StockMovement) => {
     const change = movement.new_stock - movement.previous_stock
     if (change > 0) return '+'
@@ -142,15 +135,14 @@ const stockChangeSymbol = (movement: StockMovement) => {
 </script>
 
 <template>
+
     <Head :title="`Riwayat Stok - ${props.product.name}`" />
 
     <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
-            <AppPageHeader
-                :title="`Riwayat Stok - ${props.product.name}`"
-                :description="`Lihat semua pergerakan stok untuk produk ${props.product.name}`"
-            >
+            <AppPageHeader :title="`Riwayat Stok - ${props.product.name}`"
+                :description="`Lihat semua pergerakan stok untuk produk ${props.product.name}`">
                 <template #actions>
                     <Button variant="outline" @click="visitOverview">
                         <ArrowLeftIcon class="mr-2 h-4 w-4" />
@@ -192,62 +184,103 @@ const stockChangeSymbol = (movement: StockMovement) => {
             <!-- Stock Movements -->
             <Card>
                 <CardHeader>
-                    <CardTitle>Riwayat Pergerakan Stok</CardTitle>
+                    <CardTitle class="flex items-center justify-between">
+                        <span>Riwayat Pergerakan Stok</span>
+                        <span class="text-sm font-normal text-muted-foreground">
+                            Total: {{ props.movements?.meta?.total || 0 }} pergerakan
+                        </span>
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <div v-for="movement in props.movements.data" :key="movement.id"
-                             class="border rounded-lg p-4 space-y-3">
-                            <!-- Movement Header -->
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="p-2 rounded-lg bg-muted">
-                                        <component :is="getMovementIcon(movement.type)" class="h-4 w-4" />
-                                    </div>
-                                    <div>
+                            class="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+
+                            <!-- Movement Header with Timeline -->
+                            <div class="flex items-start space-x-4">
+                                <!-- Icon with colored background -->
+                                <div :class="{
+                                    'p-2 rounded-full': true,
+                                    'bg-green-100 text-green-600': movement.type === 'in',
+                                    'bg-red-100 text-red-600': movement.type === 'out',
+                                    'bg-blue-100 text-blue-600': movement.type === 'adjustment'
+                                }">
+                                    <component :is="getMovementIcon(movement.type)" class="h-4 w-4" />
+                                </div>
+
+                                <!-- Main Content -->
+                                <div class="flex-1 space-y-2">
+                                    <!-- Type and Date -->
+                                    <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-2">
-                                            <Badge :variant="getMovementVariant(movement.type)">
+                                            <Badge :variant="getMovementVariant(movement.type)" class="text-xs">
                                                 {{ getMovementLabel(movement.type) }}
                                             </Badge>
-                                            <span class="text-sm text-muted-foreground">
+                                            <span class="text-xs text-muted-foreground">
                                                 {{ getReferenceTypeLabel(movement.reference_type) }}
                                             </span>
                                         </div>
-                                        <div class="text-sm text-muted-foreground">
-                                            <CalendarIcon class="inline mr-1 h-3 w-3" />
+                                        <div class="text-xs text-muted-foreground flex items-center">
+                                            <CalendarIcon class="mr-1 h-3 w-3" />
                                             {{ formatDate(movement.created_at) }}
                                         </div>
                                     </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-lg font-semibold">
-                                        Qty: {{ movement.quantity }}
-                                    </div>
-                                    <div class="text-sm text-muted-foreground">
-                                        {{ movement.previous_stock }} → {{ movement.new_stock }}
-                                        <span :class="stockChangeClass(movement)" class="ml-1 font-medium">
-                                            ({{ stockChangeSymbol(movement) }}{{ movement.new_stock - movement.previous_stock }})
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Movement Details -->
-                            <div class="grid gap-2 md:grid-cols-3 text-sm">
-                                <div v-if="movement.user">
-                                    <div class="text-muted-foreground">Diubah oleh</div>
-                                    <div class="flex items-center">
-                                        <UserIcon class="mr-1 h-3 w-3" />
-                                        {{ movement.user.name }}
+                                    <!-- Stock Change Visualization -->
+                                    <div class="bg-muted/30 rounded-lg p-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm font-medium">Perubahan Stok</span>
+                                            <span class="text-sm text-muted-foreground">Qty: {{ movement.quantity }}</span>
+                                        </div>
+
+                                        <div class="flex items-center space-x-3">
+                                            <!-- Previous Stock -->
+                                            <div class="text-center">
+                                                <div class="text-xs text-muted-foreground">Sebelum</div>
+                                                <div class="text-lg font-semibold">{{ movement.previous_stock }}</div>
+                                            </div>
+
+                                            <!-- Arrow with change -->
+                                            <div class="flex-1 flex items-center justify-center">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="h-px bg-border flex-1"></div>
+                                                    <div :class="{
+                                                        'px-2 py-1 rounded text-xs font-medium': true,
+                                                        'bg-green-100 text-green-700': movement.new_stock - movement.previous_stock > 0,
+                                                        'bg-red-100 text-red-700': movement.new_stock - movement.previous_stock < 0,
+                                                        'bg-gray-100 text-gray-700': movement.new_stock - movement.previous_stock === 0
+                                                    }">
+                                                        {{ stockChangeSymbol(movement) }}{{ movement.new_stock - movement.previous_stock }}
+                                                    </div>
+                                                    <div class="h-px bg-border flex-1"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- New Stock -->
+                                            <div class="text-center">
+                                                <div class="text-xs text-muted-foreground">Sesudah</div>
+                                                <div class="text-lg font-semibold">{{ movement.new_stock }}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div v-if="movement.reference_id">
-                                    <div class="text-muted-foreground">Referensi ID</div>
-                                    <div>{{ movement.reference_id }}</div>
-                                </div>
-                                <div v-if="movement.notes">
-                                    <div class="text-muted-foreground">Catatan</div>
-                                    <div>{{ movement.notes }}</div>
+
+                                    <!-- Additional Details -->
+                                    <div v-if="movement.user || movement.reference_id || movement.notes"
+                                         class="grid gap-2 md:grid-cols-3 text-sm pt-2 border-t">
+                                        <div v-if="movement.user" class="flex items-center space-x-1">
+                                            <UserIcon class="h-3 w-3 text-muted-foreground" />
+                                            <span class="text-muted-foreground">oleh</span>
+                                            <span class="font-medium">{{ movement.user.name }}</span>
+                                        </div>
+                                        <div v-if="movement.reference_id" class="flex items-center space-x-1">
+                                            <span class="text-muted-foreground">Ref:</span>
+                                            <span class="font-mono text-xs bg-muted px-1 rounded">{{ movement.reference_id }}</span>
+                                        </div>
+                                        <div v-if="movement.notes" class="md:col-span-3">
+                                            <span class="text-muted-foreground">Catatan:</span>
+                                            <span class="ml-1 italic">{{ movement.notes }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -266,17 +299,17 @@ const stockChangeSymbol = (movement: StockMovement) => {
 
             <!-- Pagination -->
             <div v-if="props.movements?.links && props.movements.links.length > 3"
-                 class="flex items-center justify-center space-x-2">
+                class="flex items-center justify-center space-x-2">
                 <template v-for="link in props.movements.links" :key="link.label">
                     <Link v-if="link.url" :href="link.url" :class="{
                         'px-3 py-2 text-sm font-medium rounded-md': true,
                         'bg-primary text-primary-foreground': link.active,
                         'bg-secondary text-secondary-foreground hover:bg-secondary/80': !link.active
                     }">
-                        {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
+                    {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
                     </Link>
                     <span v-else
-                          class="px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed bg-secondary text-secondary-foreground">
+                        class="px-3 py-2 text-sm font-medium rounded-md opacity-50 cursor-not-allowed bg-secondary text-secondary-foreground">
                         {{ link.label.replace('pagination.previous', '«').replace('pagination.next', '»') }}
                     </span>
                 </template>

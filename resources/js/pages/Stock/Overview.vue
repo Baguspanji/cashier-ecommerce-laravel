@@ -127,7 +127,7 @@ const getStockStatus = (product: Product) => {
 
             <!-- Summary Cards -->
             <div class="grid gap-4 md:grid-cols-4">
-                <Card class="p-4">
+                <Card class="px-5 py-6">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/20">
                             <PackageIcon class="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -139,7 +139,7 @@ const getStockStatus = (product: Product) => {
                     </div>
                 </Card>
 
-                <Card class="p-4">
+                <Card class="px-5 py-6">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
                             <AlertTriangleIcon class="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
@@ -152,7 +152,7 @@ const getStockStatus = (product: Product) => {
                     </div>
                 </Card>
 
-                <Card class="p-4">
+                <Card class="px-5 py-6">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
                             <XCircleIcon class="h-8 w-8 text-red-600 dark:text-red-400" />
@@ -165,7 +165,7 @@ const getStockStatus = (product: Product) => {
                     </div>
                 </Card>
 
-                <Card class="p-4">
+                <Card class="px-5 py-6">
                     <div class="flex items-center gap-4">
                         <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
                             <TrendingUpIcon class="h-8 w-8 text-green-600 dark:text-green-400" />

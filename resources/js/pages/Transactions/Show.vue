@@ -2,20 +2,24 @@
 import { Head, Link } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useTransactions, type Transaction } from '@/composables/useTransactions'
 import {
     ArrowLeftIcon,
     PrinterIcon,
-    ReceiptIcon,
     UserIcon,
     CalendarIcon,
     DollarSignIcon,
     CreditCardIcon,
     PackageIcon,
-    FileTextIcon
+    FileTextIcon,
+    CheckCircleIcon,
+    XCircleIcon,
+    ClockIcon
 } from 'lucide-vue-next'
+import AppPageHeader from '@/components/AppPageHeader.vue'
 
 interface Props {
     transaction: Transaction
@@ -54,21 +58,25 @@ const getPaymentMethodIcon = (method: string) => {
 
 const getPaymentMethodLabel = (method: string) => {
     const labels: Record<string, string> = {
-        'cash': 'Cash',
-        'debit': 'Debit Card',
-        'credit': 'Credit Card',
+        'cash': 'Tunai',
+        'debit': 'Kartu Debit',
+        'credit': 'Kartu Kredit',
         'e-wallet': 'E-Wallet'
     }
     return labels[method] || method
 }
 
 const getStatusBadge = (status: string) => {
-    const statuses: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'warning' }> = {
-        'completed': { label: 'Completed', variant: 'default' },
-        'pending': { label: 'Pending', variant: 'warning' },
-        'cancelled': { label: 'Cancelled', variant: 'destructive' }
+    const statuses: Record<string, {
+        label: string;
+        variant: 'default' | 'secondary' | 'destructive' | 'warning';
+        icon: any
+    }> = {
+        'completed': { label: 'Selesai', variant: 'default', icon: CheckCircleIcon },
+        'pending': { label: 'Menunggu', variant: 'warning', icon: ClockIcon },
+        'cancelled': { label: 'Dibatalkan', variant: 'destructive', icon: XCircleIcon }
     }
-    return statuses[status] || { label: status, variant: 'default' as const }
+    return statuses[status] || { label: status, variant: 'default' as const, icon: CheckCircleIcon }
 }
 
 const printReceipt = () => {
@@ -77,86 +85,85 @@ const printReceipt = () => {
 </script>
 
 <template>
-    <Head :title="`Transaction #${transaction.transaction_number}`" />
+    <Head :title="`Transaksi - ${transaction.transaction_number}`" />
 
     <AppLayout>
-        <div class="container mx-auto px-4 py-6">
+        <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        @click="visitIndex()"
-                        class="gap-2"
-                    >
-                        <ArrowLeftIcon class="h-4 w-4" />
-                        Back to Transactions
+            <AppPageHeader
+                :title="`Detail Transaksi - ${transaction.transaction_number}`"
+                :description="`Informasi lengkap transaksi: ${transaction.transaction_number}`"
+            >
+                <template #actions>
+                    <Button variant="ghost" size="sm" @click="visitIndex()" class="gap-2">
+                        <ArrowLeftIcon /> Kembali ke Transaksi
                     </Button>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">
-                            Transaction #{{ transaction.transaction_number }}
-                        </h1>
-                        <p class="text-sm text-gray-500">Transaction Details</p>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        @click="printReceipt"
-                        class="gap-2"
-                    >
-                        <PrinterIcon class="h-4 w-4" />
-                        Print Receipt
-                    </Button>
-                </div>
-            </div>
+                </template>
+            </AppPageHeader>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid gap-6 lg:grid-cols-3">
                 <!-- Main Transaction Info -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2">
                     <!-- Transaction Summary -->
-                    <Card>
+                    <Card class="mb-6">
                         <CardHeader>
-                            <CardTitle class="flex items-center gap-2">
-                                <ReceiptIcon class="h-5 w-5" />
-                                Transaction Summary
-                            </CardTitle>
+                            <CardTitle>Informasi Transaksi</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Transaction Number -->
+                            <div class="grid gap-2">
+                                <Label class="text-sm font-medium text-muted-foreground">Nomor Transaksi</Label>
+                                <p class="text-lg font-mono font-semibold">{{ transaction.transaction_number }}</p>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="grid gap-2">
+                                <Label class="text-sm font-medium text-muted-foreground">Status</Label>
                                 <div>
-                                    <label class="text-sm font-medium text-gray-500">Transaction Number</label>
-                                    <p class="text-lg font-mono font-semibold">{{ transaction.transaction_number }}</p>
+                                    <Badge :variant="getStatusBadge(transaction.status).variant" class="gap-1">
+                                        <component :is="getStatusBadge(transaction.status).icon" class="h-3 w-3" />
+                                        {{ getStatusBadge(transaction.status).label }}
+                                    </Badge>
                                 </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Status</label>
-                                    <div class="mt-1">
-                                        <Badge :variant="getStatusBadge(transaction.status).variant">
-                                            {{ getStatusBadge(transaction.status).label }}
-                                        </Badge>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Cashier</label>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <UserIcon class="h-4 w-4 text-gray-400" />
+                            </div>
+
+                            <!-- Cashier and Date -->
+                            <div class="grid gap-4 md:grid-cols-2">
+                                <div class="grid gap-2">
+                                    <Label class="text-sm font-medium text-muted-foreground">Kasir</Label>
+                                    <div class="flex items-center gap-2">
+                                        <UserIcon class="h-4 w-4 text-muted-foreground" />
                                         <span class="font-medium">{{ transaction.user.name }}</span>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Date & Time</label>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <CalendarIcon class="h-4 w-4 text-gray-400" />
+                                <div class="grid gap-2">
+                                    <Label class="text-sm font-medium text-muted-foreground">Tanggal & Waktu</Label>
+                                    <div class="flex items-center gap-2">
+                                        <CalendarIcon class="h-4 w-4 text-muted-foreground" />
                                         <span class="font-medium">{{ formatDate(transaction.created_at) }}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div v-if="transaction.notes" class="pt-4 border-t">
-                                <label class="text-sm font-medium text-gray-500">Notes</label>
-                                <p class="mt-1 text-gray-700">{{ transaction.notes }}</p>
+                            <!-- Payment Method -->
+                            <div class="grid gap-2">
+                                <Label class="text-sm font-medium text-muted-foreground">Metode Pembayaran</Label>
+                                <div class="flex items-center gap-2">
+                                    <component :is="getPaymentMethodIcon(transaction.payment_method)" class="h-4 w-4 text-muted-foreground" />
+                                    <span class="font-medium">{{ getPaymentMethodLabel(transaction.payment_method) }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Total Amount -->
+                            <div class="grid gap-2">
+                                <Label class="text-sm font-medium text-muted-foreground">Total</Label>
+                                <p class="text-2xl font-mono font-bold text-primary">{{ formatCurrency(transaction.total_amount) }}</p>
+                            </div>
+
+                            <!-- Notes -->
+                            <div v-if="transaction.notes" class="grid gap-2">
+                                <Label class="text-sm font-medium text-muted-foreground">Catatan</Label>
+                                <p class="text-foreground whitespace-pre-wrap">{{ transaction.notes }}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -166,7 +173,7 @@ const printReceipt = () => {
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <PackageIcon class="h-5 w-5" />
-                                Items ({{ transaction.items.length }})
+                                Item Transaksi ({{ transaction.items.length }})
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -175,10 +182,10 @@ const printReceipt = () => {
                                     <table class="w-full">
                                         <thead>
                                             <tr class="border-b">
-                                                <th class="text-left py-2 font-medium text-gray-500">Product</th>
-                                                <th class="text-center py-2 font-medium text-gray-500">Qty</th>
-                                                <th class="text-right py-2 font-medium text-gray-500">Unit Price</th>
-                                                <th class="text-right py-2 font-medium text-gray-500">Subtotal</th>
+                                                <th class="text-left py-2 font-medium text-muted-foreground">Produk</th>
+                                                <th class="text-center py-2 font-medium text-muted-foreground">Qty</th>
+                                                <th class="text-right py-2 font-medium text-muted-foreground">Harga Satuan</th>
+                                                <th class="text-right py-2 font-medium text-muted-foreground">Subtotal</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -190,7 +197,7 @@ const printReceipt = () => {
                                                 <td class="py-3">
                                                     <div>
                                                         <p class="font-medium">{{ item.product_name }}</p>
-                                                        <p class="text-sm text-gray-500">{{ item.product.category.name }}</p>
+                                                        <p class="text-sm text-muted-foreground">{{ item.product.category.name }}</p>
                                                     </div>
                                                 </td>
                                                 <td class="py-3 text-center">
@@ -217,7 +224,7 @@ const printReceipt = () => {
                                             ) }}
                                         </span>
                                     </div>
-                                    <div class="flex justify-between text-xl font-bold text-blue-600">
+                                    <div class="flex justify-between text-xl font-bold text-primary">
                                         <span>Total:</span>
                                         <span>{{ formatCurrency(transaction.total_amount) }}</span>
                                     </div>
@@ -229,55 +236,82 @@ const printReceipt = () => {
 
                 <!-- Sidebar -->
                 <div class="space-y-6">
+                    <!-- Actions -->
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Aksi</CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-4">
+                            <Button
+                                variant="outline"
+                                class="w-full gap-2"
+                                @click="printReceipt"
+                            >
+                                <PrinterIcon class="h-4 w-4" />
+                                Cetak Struk
+                            </Button>
+                            <Button
+                                variant="outline"
+                                class="w-full gap-2"
+                                as-child
+                            >
+                                <Link href="/transactions/daily-report">
+                                    <FileTextIcon class="h-4 w-4" />
+                                    Laporan Harian
+                                </Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+
                     <!-- Payment Information -->
                     <Card>
                         <CardHeader>
                             <CardTitle class="flex items-center gap-2">
                                 <component :is="getPaymentMethodIcon(transaction.payment_method)" class="h-5 w-5" />
-                                Payment Details
+                                Detail Pembayaran
                             </CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-4">
                             <div>
-                                <p class="text-sm font-medium text-gray-500">Payment Method</p>
+                                <Label class="text-sm font-medium text-muted-foreground">Metode Pembayaran</Label>
                                 <p class="text-lg font-semibold">{{ getPaymentMethodLabel(transaction.payment_method) }}</p>
                             </div>
 
                             <div class="space-y-3 pt-3 border-t">
                                 <div class="flex justify-between">
-                                    <span class="text-sm text-gray-500">Total Amount</span>
+                                    <span class="text-sm text-muted-foreground">Total Tagihan</span>
                                     <span class="font-semibold">{{ formatCurrency(transaction.total_amount) }}</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm text-gray-500">Payment Amount</span>
+                                    <span class="text-sm text-muted-foreground">Jumlah Bayar</span>
                                     <span class="font-semibold">{{ formatCurrency(transaction.payment_amount) }}</span>
                                 </div>
                                 <div class="flex justify-between text-green-600">
-                                    <span class="text-sm font-medium">Change</span>
+                                    <span class="text-sm font-medium">Kembalian</span>
                                     <span class="font-semibold">{{ formatCurrency(transaction.change_amount) }}</span>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    <!-- Quick Stats -->
+                    <!-- Transaction Stats -->
                     <Card>
                         <CardHeader>
-                            <CardTitle>Transaction Stats</CardTitle>
+                            <CardTitle>Statistik Transaksi</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-3">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-500">Total Items</span>
+                                <span class="text-sm text-muted-foreground">Total Item</span>
                                 <span class="font-semibold">{{ transaction.items.length }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-500">Total Quantity</span>
+                                <span class="text-sm text-muted-foreground">Total Kuantitas</span>
                                 <span class="font-semibold">
                                     {{ transaction.items.reduce((sum, item) => sum + item.quantity, 0) }} pcs
                                 </span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-500">Average Price</span>
+                                <span class="text-sm text-muted-foreground">Rata-rata Harga</span>
                                 <span class="font-semibold">
                                     {{ formatCurrency(
                                         transaction.items.length > 0
@@ -289,30 +323,23 @@ const printReceipt = () => {
                         </CardContent>
                     </Card>
 
-                    <!-- Actions -->
+                    <!-- Timeline -->
                     <Card>
                         <CardHeader>
-                            <CardTitle>Actions</CardTitle>
+                            <CardTitle class="flex items-center gap-2">
+                                <CalendarIcon class="h-5 w-5" />
+                                Timeline
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent class="space-y-2">
-                            <Button
-                                variant="outline"
-                                class="w-full gap-2"
-                                @click="printReceipt"
-                            >
-                                <PrinterIcon class="h-4 w-4" />
-                                Print Receipt
-                            </Button>
-                            <Button
-                                variant="outline"
-                                class="w-full gap-2"
-                                as-child
-                            >
-                                <Link href="/transactions/daily-report">
-                                    <FileTextIcon class="h-4 w-4" />
-                                    Daily Report
-                                </Link>
-                            </Button>
+                        <CardContent class="space-y-3">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Dibuat</p>
+                                <p class="text-sm">{{ formatDate(transaction.created_at) }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Terakhir Diperbarui</p>
+                                <p class="text-sm">{{ formatDate(transaction.updated_at) }}</p>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

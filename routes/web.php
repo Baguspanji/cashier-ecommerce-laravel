@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [TransactionController::class, 'pos'])->name('dashboard');
 
     // Categories
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', CategoryController::class)->except(['create', 'show', 'edit']);
 
     // Products
     Route::resource('products', ProductController::class);

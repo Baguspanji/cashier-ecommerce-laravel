@@ -116,7 +116,7 @@ const getPaymentMethodBadge = (method: string) => {
             <!-- Summary Cards -->
             <div class="grid gap-4 md:grid-cols-4">
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Total Penjualan</p>
@@ -128,7 +128,7 @@ const getPaymentMethodBadge = (method: string) => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Pendapatan Hari Ini</p>
@@ -145,7 +145,7 @@ const getPaymentMethodBadge = (method: string) => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Rata-rata Penjualan</p>
@@ -164,7 +164,7 @@ const getPaymentMethodBadge = (method: string) => {
                 </Card>
 
                 <Card>
-                    <CardContent class="p-4">
+                    <CardContent>
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground">Bulan Ini</p>
@@ -191,7 +191,8 @@ const getPaymentMethodBadge = (method: string) => {
                             <div class="relative">
                                 <SearchIcon
                                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input id="search" v-model="search" placeholder="ID Transaksi..." class="pl-10 h-10" />
+                                <Input id="search" v-model="search" placeholder="Kode Transaksi..."
+                                    class="pl-10 h-10" />
                             </div>
                         </div>
 
@@ -243,7 +244,8 @@ const getPaymentMethodBadge = (method: string) => {
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b">
-                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">ID Transaksi</th>
+                                    <th class="text-left py-3 px-4 font-medium text-muted-foreground">Kode Transaksi
+                                    </th>
                                     <th class="text-left py-3 px-4 font-medium text-muted-foreground">Tanggal & Waktu
                                     </th>
                                     <th class="text-left py-3 px-4 font-medium text-muted-foreground">Items</th>
@@ -254,10 +256,10 @@ const getPaymentMethodBadge = (method: string) => {
                             </thead>
                             <tbody>
                                 <tr v-for="transaction in props.transactions.data" :key="transaction.id"
-                                    class="border-b hover:bg-muted/50">
+                                    class="border-b hover:bg-muted/50" @click="visitShow(transaction.id)">
                                     <td class="py-3 px-4">
                                         <div class="font-mono text-sm font-medium">
-                                            #{{ String(transaction.id).padStart(6, '0') }}
+                                            #{{ String(transaction.transaction_number).padStart(6, '0') }}
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
@@ -287,8 +289,8 @@ const getPaymentMethodBadge = (method: string) => {
                                         </div>
                                     </td>
                                     <td class="py-3 px-4">
-                                        <Button variant="ghost" size="sm" @click="visitShow(transaction.id)"
-                                            :disabled="loading">
+                                        <Button variant="ghost" size="sm" @click.stop="visitShow(transaction.id)"
+                                            :disabled="loading" class="cursor-pointer">
                                             <EyeIcon class="h-4 w-4 mr-1" />
                                             Lihat
                                         </Button>

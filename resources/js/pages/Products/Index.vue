@@ -199,7 +199,7 @@ const cancelDelete = () => {
             <!-- Products Grid -->
             <div class="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 <Card v-for="product in props.products?.data || []" :key="product.id"
-                    class="hover:shadow-md transition-shadow">
+                    class="hover:shadow-md transition-shadow" @click="visitShow(product.id)">
                     <CardContent>
                         <div class="space-y-2">
                             <!-- Header with actions -->
@@ -211,15 +211,15 @@ const cancelDelete = () => {
                                     }}</p>
                                 </div>
                                 <div class="flex space-x-1 ml-2">
-                                    <Button variant="ghost" size="icon" @click="visitShow(product.id)" class="h-6 w-6"
+                                    <Button variant="ghost" size="icon" @click.stop="visitShow(product.id)" class="h-6 w-6 cursor-pointer"
                                         :data-testid="`view-product-${product.id}`">
                                         <EyeIcon class="h-3 w-3" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" @click="visitEdit(product.id)" class="h-6 w-6"
+                                    <Button variant="ghost" size="icon" @click.stop="visitEdit(product.id)" class="h-6 w-6 cursor-pointer"
                                         :data-testid="`edit-product-${product.id}`">
                                         <PencilIcon class="h-3 w-3" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" @click="handleDelete(product)" class="h-6 w-6"
+                                    <Button variant="ghost" size="icon" @click.stop="handleDelete(product)" class="h-6 w-6 cursor-pointer"
                                         :data-testid="`delete-product-${product.id}`">
                                         <TrashIcon class="h-3 w-3" />
                                     </Button>

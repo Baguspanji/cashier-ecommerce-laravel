@@ -203,10 +203,10 @@ const cancelDelete = () => {
                                 </div>
                                 <div class="flex space-x-1 ml-2">
                                     <Button variant="ghost" size="icon" @click="openEditDialog(category)"
-                                        class="h-6 w-6">
+                                        class="h-6 w-6 cursor-pointer">
                                         <PencilIcon class="h-3 w-3" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" @click="handleDelete(category)" class="h-6 w-6"
+                                    <Button variant="ghost" size="icon" @click="handleDelete(category)" class="h-6 w-6 cursor-pointer"
                                         :data-testid="`delete-category-${category.id}`">
                                         <TrashIcon class="h-3 w-3" />
                                     </Button>
@@ -281,7 +281,9 @@ const cancelDelete = () => {
                         Apakah Anda yakin ingin menghapus kategori <strong>{{ categoryToDelete?.name }}</strong>?
                         Tindakan ini tidak dapat dibatalkan.
                         <span v-if="(categoryToDelete?.products_count || 0) > 0" class="block mt-2 text-destructive">
-                            Peringatan: Kategori ini memiliki {{ categoryToDelete?.products_count }} produk. Menghapus kategori akan menghapus referensi kategori dari produk-produk tersebut.
+                            Peringatan: Kategori ini memiliki {{ categoryToDelete?.products_count }} produk. Menghapus
+                            kategori
+                            akan menghapus referensi kategori dari produk-produk tersebut.
                         </span>
                     </DialogDescription>
                 </DialogHeader>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Head, Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,7 @@ import {
     CalendarIcon
 } from 'lucide-vue-next'
 import AppPageHeader from '@/components/AppPageHeader.vue'
+import { useStock } from '@/composables/useStock'
 
 interface Props {
     product: Product
@@ -34,6 +35,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const { loading, destroy, toggleStatus, visitEdit, visitIndex } = useProducts()
+const { visitProductMovements } = useStock()
 
 // Delete dialog state
 const isDeleteDialogOpen = ref(false)
@@ -241,11 +243,9 @@ const cancelDelete = () => {
                             <CardTitle>Riwayat & Laporan</CardTitle>
                         </CardHeader>
                         <CardContent class="space-y-4">
-                            <Button variant="outline" class="w-full gap-2" as-child>
-                                <Link href="/stock/overview">
+                            <Button variant="outline" class="w-full gap-2" @click="visitProductMovements(product.id)">
                                 <PackageIcon class="h-4 w-4" />
                                 Lihat Riwayat Stok
-                                </Link>
                             </Button>
                         </CardContent>
                     </Card>
