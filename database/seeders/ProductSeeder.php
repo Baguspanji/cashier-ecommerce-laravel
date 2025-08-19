@@ -17,10 +17,10 @@ class ProductSeeder extends Seeder
         // Get existing categories
         $categories = Category::all();
 
-        if ($categories->isEmpty()) {
-            $this->call(CategorySeeder::class);
-            $categories = Category::all();
-        }
+        // if ($categories->isEmpty()) {
+        //     $this->call(CategorySeeder::class);
+        //     $categories = Category::all();
+        // }
 
         // Create sample products for each category
         $sampleProducts = [
@@ -90,11 +90,11 @@ class ProductSeeder extends Seeder
         }
 
         // Create additional random products
-        Product::factory(30)->create();
+        // Product::factory(30)->create();
 
         // Create some products with specific states for testing
-        Product::factory(5)->outOfStock()->create();
-        Product::factory(3)->lowStock()->create();
-        Product::factory(2)->inactive()->create();
+        // Product::factory(5)->outOfStock()->create();
+        // Product::factory(3)->lowStock()->create();
+        // Product::factory(2)->inactive()->create();
     }
 }

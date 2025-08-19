@@ -47,6 +47,10 @@ const mockUseProducts = {
     statusFilter: { value: 'all' },
     destroy: vi.fn(),
     toggleStatus: vi.fn(),
+    visitIndex: vi.fn(),
+    visitShow: vi.fn(),
+    visitCreate: vi.fn(),
+    visitEdit: vi.fn(),
     filteredProducts: {
         value: [
             {
@@ -102,6 +106,30 @@ vi.mock('@/composables/useCategories', () => ({
     useCategories: () => mockUseCategories,
 }))
 
+// Mock dialog components
+vi.mock('@/components/ui/dialog', () => ({
+    Dialog: {
+        template: '<div class="dialog" v-if="open"><slot /></div>',
+        props: ['open'],
+        emits: ['update:open'],
+    },
+    DialogContent: {
+        template: '<div class="dialog-content"><slot /></div>',
+    },
+    DialogDescription: {
+        template: '<div class="dialog-description"><slot /></div>',
+    },
+    DialogFooter: {
+        template: '<div class="dialog-footer"><slot /></div>',
+    },
+    DialogHeader: {
+        template: '<div class="dialog-header"><slot /></div>',
+    },
+    DialogTitle: {
+        template: '<div class="dialog-title"><slot /></div>',
+    },
+}))
+
 // Mock UI components
 vi.mock('@/components/ui/button', () => ({
     Button: {
@@ -152,17 +180,83 @@ vi.mock('@/components/ui/select', () => ({
 }))
 
 describe('Products Index', () => {
+    const defaultProps = {
+        products: {
+            data: [
+                {
+                    id: 1,
+                    name: 'Laptop',
+                    description: 'Gaming laptop',
+                    price: '15000000',
+                    minimum_stock: 5,
+                    current_stock: 10,
+                    is_active: true,
+                    category_id: 1,
+                    category: {
+                        id: 1,
+                        name: 'Electronics',
+                        created_at: '2025-01-01T00:00:00.000000Z',
+                        updated_at: '2025-01-01T00:00:00.000000Z',
+                    },
+                    created_at: '2025-01-01T00:00:00.000000Z',
+                    updated_at: '2025-01-01T00:00:00.000000Z',
+                },
+                {
+                    id: 2,
+                    name: 'T-Shirt',
+                    description: 'Cotton t-shirt',
+                    price: '150000',
+                    minimum_stock: 20,
+                    current_stock: 0,
+                    is_active: true,
+                    category_id: 2,
+                    category: {
+                        id: 2,
+                        name: 'Clothing',
+                        created_at: '2025-01-01T00:00:00.000000Z',
+                        updated_at: '2025-01-01T00:00:00.000000Z',
+                    },
+                    created_at: '2025-01-01T00:00:00.000000Z',
+                    updated_at: '2025-01-01T00:00:00.000000Z',
+                },
+            ],
+        },
+        categories: [
+            {
+                id: 1,
+                name: 'Electronics',
+                created_at: '2025-01-01T00:00:00.000000Z',
+                updated_at: '2025-01-01T00:00:00.000000Z',
+            },
+            {
+                id: 2,
+                name: 'Clothing',
+                created_at: '2025-01-01T00:00:00.000000Z',
+                updated_at: '2025-01-01T00:00:00.000000Z',
+            },
+        ],
+        filters: {
+            search: '',
+            category_id: undefined,
+            status: 'all',
+        },
+    }
+
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
     it('renders correctly', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
         expect(wrapper.exists()).toBe(true)
     })
 
     it('displays products list', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
         const productsText = wrapper.text()
 
         expect(productsText).toContain('Laptop')
@@ -172,7 +266,9 @@ describe('Products Index', () => {
     })
 
     it('shows create product button', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
         const createButton = wrapper.find('[data-testid="create-product-btn"]')
 
         expect(createButton.exists()).toBe(true)
@@ -180,7 +276,9 @@ describe('Products Index', () => {
     })
 
     it('shows search and filter inputs', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
 
         const searchInput = wrapper.find('[data-testid="search-input"]')
         const categoryFilter = wrapper.find('[data-testid="category-filter"]')
@@ -192,7 +290,9 @@ describe('Products Index', () => {
     })
 
     it('displays stock status badges correctly', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
         const badgeText = wrapper.text()
 
         // Laptop has stock > minimum, so should show "Tersedia"
@@ -203,7 +303,9 @@ describe('Products Index', () => {
     })
 
     it('shows product actions', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
 
         // Look for action buttons (View, Edit, Delete, Toggle Status)
         const viewButtons = wrapper.findAll('[data-testid^="view-product-"]')
@@ -216,7 +318,9 @@ describe('Products Index', () => {
     })
 
     it('calls toggleStatus when toggle button is clicked', async () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
 
         const toggleButton = wrapper.find('[data-testid="toggle-product-1"]')
         if (toggleButton.exists()) {
@@ -226,21 +330,92 @@ describe('Products Index', () => {
     })
 
     it('displays empty state when no products', async () => {
-        mockUseProducts.products.value = []
-        mockUseProducts.filteredProducts.value = []
+        const emptyProps = {
+            ...defaultProps,
+            products: { data: [] }
+        }
 
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: emptyProps,
+        })
         await wrapper.vm.$nextTick()
 
         const emptyStateText = wrapper.text()
-        expect(emptyStateText).toContain('Tidak ada produk')
+        expect(emptyStateText).toContain('Belum ada produk')
     })
 
     it('formats price correctly', () => {
-        const wrapper = mount(ProductsIndex)
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
         const text = wrapper.text()
 
         // Check if price is formatted with Indonesian currency format
         expect(text).toContain('Rp')
+    })
+
+    it('opens delete dialog when delete button is clicked', async () => {
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
+
+        const deleteButton = wrapper.find('[data-testid="delete-product-1"]')
+        expect(deleteButton.exists()).toBe(true)
+
+        await deleteButton.trigger('click')
+
+        // Check if dialog is opened
+        const dialog = wrapper.find('.dialog')
+        expect(dialog.exists()).toBe(true)
+        expect(wrapper.text()).toContain('Hapus Produk')
+        expect(wrapper.text()).toContain('Laptop')
+    })
+
+    it('closes delete dialog when cancel button is clicked', async () => {
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
+
+        // Open dialog first
+        const deleteButton = wrapper.find('[data-testid="delete-product-1"]')
+        await deleteButton.trigger('click')
+
+        // Find and click cancel button
+        const allButtons = wrapper.findAll('button')
+        const cancelButton = allButtons.find(button =>
+            button.text().includes('Batal')
+        )
+
+        if (cancelButton && cancelButton.exists()) {
+            await cancelButton.trigger('click')
+
+            // Dialog should be closed
+            await wrapper.vm.$nextTick()
+            const dialog = wrapper.find('.dialog')
+            expect(dialog.exists()).toBe(false)
+        }
+    })
+
+    it('calls destroy when confirm delete button is clicked', async () => {
+        const wrapper = mount(ProductsIndex, {
+            props: defaultProps,
+        })
+
+        // Open dialog first
+        const deleteButton = wrapper.find('[data-testid="delete-product-1"]')
+        await deleteButton.trigger('click')
+
+        // Find and click confirm button
+        const allButtons = wrapper.findAll('button')
+        const confirmButton = allButtons.find(button =>
+            button.text().includes('Hapus') && !button.text().includes('Produk')
+        )
+
+        if (confirmButton && confirmButton.exists()) {
+            await confirmButton.trigger('click')
+
+            // Should call destroy with correct product id
+            expect(mockUseProducts.destroy).toHaveBeenCalledWith(1)
+        }
     })
 })

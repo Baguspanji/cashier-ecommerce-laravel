@@ -41,6 +41,6 @@ class CategorySeeder extends Seeder
         }
 
         // Create additional random categories for testing
-        Category::factory(5)->create();
+        // Category::factory(5)->create();
     }
 }

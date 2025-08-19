@@ -113,6 +113,74 @@ const getPaymentMethodBadge = (method: string) => {
                 </template>
             </AppPageHeader>
 
+            <!-- Summary Cards -->
+            <div class="grid gap-4 md:grid-cols-4">
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Total Penjualan</p>
+                                <p class="text-2xl font-bold">{{ props.transactions.meta?.total || 0 }}</p>
+                            </div>
+                            <ReceiptIcon class="h-8 w-8 text-blue-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Pendapatan Hari Ini</p>
+                                <p class="text-2xl font-bold">
+                                    {{formatCurrency(props.transactions.data
+                                        .filter(t => new Date(t.created_at).toDateString() === new Date().toDateString())
+                                        .reduce((sum, t) => sum + parseFloat(t.total_amount), 0)
+                                    )}}
+                                </p>
+                            </div>
+                            <DollarSignIcon class="h-8 w-8 text-green-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Rata-rata Penjualan</p>
+                                <p class="text-2xl font-bold">
+                                    {{formatCurrency(
+                                        props.transactions.data.length > 0
+                                            ? props.transactions.data.reduce((sum, t) => sum + parseFloat(t.total_amount), 0) /
+                                            props.transactions.data.length
+                                            : 0
+                                    )}}
+                                </p>
+                            </div>
+                            <CalendarIcon class="h-8 w-8 text-purple-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground">Bulan Ini</p>
+                                <p class="text-2xl font-bold">
+                                    {{props.transactions.data
+                                        .filter(t => new Date(t.created_at).getMonth() === new Date().getMonth())
+                                        .length
+                                    }}
+                                </p>
+                            </div>
+                            <UserIcon class="h-8 w-8 text-orange-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <!-- Filters -->
             <Card>
                 <CardContent>
@@ -167,74 +235,6 @@ const getPaymentMethodBadge = (method: string) => {
                     </div>
                 </CardContent>
             </Card>
-
-            <!-- Summary Cards -->
-            <div class="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Total Penjualan</p>
-                                <p class="text-2xl font-bold">{{ props.transactions.meta?.total || 0 }}</p>
-                            </div>
-                            <ReceiptIcon class="h-8 w-8 text-blue-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Pendapatan Hari Ini</p>
-                                <p class="text-2xl font-bold">
-                                    {{formatCurrency(props.transactions.data
-                                        .filter(t => new Date(t.created_at).toDateString() === new Date().toDateString())
-                                        .reduce((sum, t) => sum + parseFloat(t.total_amount), 0)
-                                    )}}
-                                </p>
-                            </div>
-                            <DollarSignIcon class="h-8 w-8 text-green-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Rata-rata Penjualan</p>
-                                <p class="text-2xl font-bold">
-                                    {{formatCurrency(
-                                        props.transactions.data.length > 0
-                                            ? props.transactions.data.reduce((sum, t) => sum + parseFloat(t.total_amount), 0) /
-                                            props.transactions.data.length
-                                            : 0
-                                    ) }}
-                                </p>
-                            </div>
-                            <CalendarIcon class="h-8 w-8 text-purple-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent class="p-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-muted-foreground">Bulan Ini</p>
-                                <p class="text-2xl font-bold">
-                                    {{props.transactions.data
-                                        .filter(t => new Date(t.created_at).getMonth() === new Date().getMonth())
-                                        .length
-                                    }}
-                                </p>
-                            </div>
-                            <UserIcon class="h-8 w-8 text-orange-500" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
 
             <!-- Transactions Table -->
             <Card>

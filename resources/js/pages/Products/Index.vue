@@ -15,6 +15,14 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import { useProducts, type Product, type ProductFilters } from '@/composables/useProducts'
 import { type Category } from '@/composables/useCategories'
 import {
@@ -60,6 +68,10 @@ const search = ref(props.filters.search || '')
 const categoryId = ref(props.filters.category_id?.toString() || 'all')
 const status = ref(props.filters.status || 'all')
 
+// Delete dialog state
+const isDeleteDialogOpen = ref(false)
+const productToDelete = ref<Product | null>(null)
+
 // Watch filters for live updating
 watch([search, categoryId, status], ([searchValue, categoryValue, statusValue]) => {
     const filters: ProductFilters = {}
@@ -92,7 +104,21 @@ const getStockStatus = (product: Product) => {
 
 // Functions
 const handleDelete = (product: Product) => {
-    destroy(product.id)
+    productToDelete.value = product
+    isDeleteDialogOpen.value = true
+}
+
+const confirmDelete = () => {
+    if (productToDelete.value) {
+        destroy(productToDelete.value.id)
+        isDeleteDialogOpen.value = false
+        productToDelete.value = null
+    }
+}
+
+const cancelDelete = () => {
+    isDeleteDialogOpen.value = false
+    productToDelete.value = null
 }
 </script>
 
@@ -257,5 +283,26 @@ const handleDelete = (product: Product) => {
                 </template>
             </div>
         </div>
+
+        <!-- Delete Confirmation Dialog -->
+        <Dialog v-model:open="isDeleteDialogOpen">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Hapus Produk</DialogTitle>
+                    <DialogDescription>
+                        Apakah Anda yakin ingin menghapus produk <strong>{{ productToDelete?.name }}</strong>?
+                        Tindakan ini tidak dapat dibatalkan.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                    <Button type="button" variant="outline" @click="cancelDelete">
+                        Batal
+                    </Button>
+                    <Button type="button" variant="destructive" @click="confirmDelete">
+                        Hapus
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

@@ -74,9 +74,7 @@ export const useProducts = () => {
     }
 
     const destroy = (id: number) => {
-        router.delete(route('products.destroy', id), {
-            onBefore: () => confirm('Apakah Anda yakin ingin menghapus produk ini?'),
-        })
+        router.delete(route('products.destroy', id))
     }
 
     const toggleStatus = (id: number) => {

@@ -59,7 +59,7 @@ class ProductController extends Controller
      */
     public function store(ProductData $data)
     {
-        $product = Product::create($data->toArray());
+        Product::create($data->toArray());
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil ditambahkan.');

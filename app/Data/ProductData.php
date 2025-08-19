@@ -7,6 +7,7 @@ use Spatie\LaravelData\Data;
 class ProductData extends Data
 {
     public function __construct(
+        public ?int $id,
         public string $name,
         public ?string $description,
         public float $price,
@@ -15,5 +16,6 @@ class ProductData extends Data
         public int $current_stock,
         public int $minimum_stock,
         public bool $is_active = true,
+        public ?CategoryData $category = null,
     ) {}
 }

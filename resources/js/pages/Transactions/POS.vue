@@ -72,6 +72,8 @@ const formatPrice = (price: string | number) => {
 }
 
 const addToCart = (product: Product) => {
+    if (product.current_stock <= 0) return
+
     const existingItem = cart.value.find(item => item.product.id === product.id)
 
     if (existingItem) {
@@ -139,6 +141,12 @@ const getPaymentMethodIcon = (method: string) => {
     }
 }
 
+const setPaymentAmount = (amount: number) => {
+    paymentAmount.value = amount
+}
+
+const quickPaymentAmounts = [5000, 10000, 20000, 50000, 100000]
+
 </script>
 
 <template>
@@ -162,20 +170,21 @@ const getPaymentMethodIcon = (method: string) => {
                     </div>
                 </div>
 
-                <div class="grid gap-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4">
+                <div class="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
                     <Card v-for="product in filteredProducts" :key="product.id"
-                        class="cursor-pointer hover:shadow-md transition-shadow" @click="addToCart(product)">
+                        class="hover:shadow-md transition-shadow">
                         <CardContent>
                             <div class="space-y-2">
                                 <div>
-                                    <h4 class="font-medium text-sm leading-tight">{{ product.name }}</h4>
+                                    <h4 class="font-medium text-sm leading-tight">{{ product.id }} - {{ product.name }}</h4>
                                     <p class="text-xs text-muted-foreground">{{ product.category?.name || 'Tanpa Kategori' }}</p>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
                                     <div class="text-xs text-muted-foreground">Stok: {{ product.current_stock }}</div>
                                 </div>
-                                <Button size="sm" class="w-full h-7 text-xs" :disabled="product.current_stock === 0">
+                                <Button size="sm" class="w-full h-7 text-xs" :disabled="product.current_stock === 0"
+                                    @click="addToCart(product)">
                                     <PlusIcon class="mr-1 h-3 w-3" />
                                     {{ product.current_stock === 0 ? 'Habis' : 'Tambah' }}
                                 </Button>
@@ -272,6 +281,32 @@ const getPaymentMethodIcon = (method: string) => {
                             <Label for="payment">Jumlah Bayar</Label>
                             <Input id="payment" v-model.number="paymentAmount" type="number" :min="totalAmount"
                                 step="1000" placeholder="0" />
+
+                            <!-- Quick Payment Buttons -->
+                            <div class="grid grid-cols-3 gap-2 mt-2">
+                                <Button
+                                    v-for="amount in quickPaymentAmounts"
+                                    :key="amount"
+                                    variant="outline"
+                                    size="sm"
+                                    @click="setPaymentAmount(amount)"
+                                    :disabled="amount < totalAmount"
+                                    class="text-xs"
+                                >
+                                    {{ formatPrice(amount) }}
+                                </Button>
+                            </div>
+
+                            <!-- Exact Amount Button -->
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                @click="setPaymentAmount(totalAmount)"
+                                class="mt-1"
+                            >
+                                Uang Pas ({{ formatPrice(totalAmount) }})
+                            </Button>
+
                             <div v-if="errors.payment_amount" class="text-sm text-destructive">
                                 {{ errors.payment_amount }}
                             </div>

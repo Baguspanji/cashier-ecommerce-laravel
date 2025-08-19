@@ -40,6 +40,10 @@ const showCreateDialog = ref(false)
 const showEditDialog = ref(false)
 const editingCategory = ref<Category | null>(null)
 
+// Delete dialog state
+const isDeleteDialogOpen = ref(false)
+const categoryToDelete = ref<Category | null>(null)
+
 // Form data
 const createForm = ref<CategoryData>({
     name: '',
@@ -88,7 +92,21 @@ const handleUpdate = () => {
 }
 
 const handleDelete = (category: Category) => {
-    destroy(category.id)
+    categoryToDelete.value = category
+    isDeleteDialogOpen.value = true
+}
+
+const confirmDelete = () => {
+    if (categoryToDelete.value) {
+        destroy(categoryToDelete.value.id)
+        isDeleteDialogOpen.value = false
+        categoryToDelete.value = null
+    }
+}
+
+const cancelDelete = () => {
+    isDeleteDialogOpen.value = false
+    categoryToDelete.value = null
 }
 
 </script>
@@ -152,8 +170,10 @@ const handleDelete = (category: Category) => {
                         <div class="grid gap-2">
                             <Label for="search">Cari Kategori</Label>
                             <div class="relative">
-                                <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input id="search" v-model="search" placeholder="Nama atau deskripsi..." class="pl-10" />
+                                <SearchIcon
+                                    class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input id="search" v-model="search" placeholder="Nama atau deskripsi..."
+                                    class="pl-10" />
                             </div>
                         </div>
 
@@ -178,14 +198,16 @@ const handleDelete = (category: Category) => {
                             <div class="flex items-start justify-between">
                                 <div class="flex-1 min-w-0">
                                     <h4 class="font-medium text-sm leading-tight truncate">{{ category.name }}</h4>
-                                    <p class="text-xs text-muted-foreground">{{ category.products_count || 0 }} produk</p>
+                                    <p class="text-xs text-muted-foreground">{{ category.products_count || 0 }} produk
+                                    </p>
                                 </div>
                                 <div class="flex space-x-1 ml-2">
-                                    <Button variant="ghost" size="icon" @click="openEditDialog(category)" class="h-6 w-6">
+                                    <Button variant="ghost" size="icon" @click="openEditDialog(category)"
+                                        class="h-6 w-6">
                                         <PencilIcon class="h-3 w-3" />
                                     </Button>
                                     <Button variant="ghost" size="icon" @click="handleDelete(category)" class="h-6 w-6"
-                                        :disabled="(category.products_count || 0) > 0">
+                                        :data-testid="`delete-category-${category.id}`">
                                         <TrashIcon class="h-3 w-3" />
                                     </Button>
                                 </div>
@@ -249,5 +271,29 @@ const handleDelete = (category: Category) => {
                 </div>
             </Card>
         </div>
+
+        <!-- Delete Confirmation Dialog -->
+        <Dialog v-model:open="isDeleteDialogOpen">
+            <DialogContent class="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Hapus Kategori</DialogTitle>
+                    <DialogDescription>
+                        Apakah Anda yakin ingin menghapus kategori <strong>{{ categoryToDelete?.name }}</strong>?
+                        Tindakan ini tidak dapat dibatalkan.
+                        <span v-if="(categoryToDelete?.products_count || 0) > 0" class="block mt-2 text-destructive">
+                            Peringatan: Kategori ini memiliki {{ categoryToDelete?.products_count }} produk. Menghapus kategori akan menghapus referensi kategori dari produk-produk tersebut.
+                        </span>
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter class="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+                    <Button type="button" variant="outline" @click="cancelDelete">
+                        Batal
+                    </Button>
+                    <Button type="button" variant="destructive" @click="confirmDelete">
+                        Hapus
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </AppLayout>
 </template>

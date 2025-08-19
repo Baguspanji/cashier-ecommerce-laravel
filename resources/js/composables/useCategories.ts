@@ -58,9 +58,7 @@ export const useCategories = () => {
     }
 
     const destroy = (id: number) => {
-        router.delete(route('categories.destroy', id), {
-            onBefore: () => confirm('Apakah Anda yakin ingin menghapus kategori ini?'),
-        })
+        router.delete(route('categories.destroy', id))
     }
 
     const visitIndex = (filters?: CategoryFilters) => {
