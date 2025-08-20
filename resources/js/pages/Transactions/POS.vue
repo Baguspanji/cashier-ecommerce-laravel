@@ -133,6 +133,7 @@ const checkout = async () => {
         notes: notes.value || undefined
     }
 
+    const total_amount = totalAmount.value;
     if (isOnline.value) {
         // Online mode: use regular store function
         try {
@@ -144,7 +145,7 @@ const checkout = async () => {
                 addNotification({
                     type: 'success',
                     title: 'Transaksi Berhasil',
-                    message: `Transaksi sebesar ${formatPrice(totalAmount.value)} berhasil diproses`
+                    message: `Transaksi sebesar ${formatPrice(total_amount)} berhasil diproses`
                 })
             }
         } catch (error: unknown) {
@@ -173,6 +174,8 @@ const checkout = async () => {
                 customer_name: undefined, // Optional for POS
                 total_amount: totalAmount.value,
                 payment_method: mapPaymentMethod(paymentMethod.value),
+                payment_amount: paymentAmount.value,
+                change_amount: changeAmount.value,
                 items: cart.value.map(item => ({
                     product_id: item.product.id,
                     quantity: item.quantity,
@@ -187,7 +190,7 @@ const checkout = async () => {
             addNotification({
                 type: 'success',
                 title: 'Transaksi Tersimpan Offline',
-                message: `Transaksi sebesar ${formatPrice(totalAmount.value)} disimpan dan akan disinkronkan nanti`
+                message: `Transaksi sebesar ${formatPrice(total_amount)} disimpan dan akan disinkronkan nanti`
             })
         } catch (error: unknown) {
             console.error('Failed to store offline transaction:', error)

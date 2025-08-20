@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->string('sync_status', 20)->default('synced')->index()->after('user_id');
             $table->string('offline_id', 50)->nullable()->after('sync_status');
+            $table->timestamp('last_sync_at')->nullable()->after('offline_id');
+            $table->json('sync_metadata')->nullable()->after('last_sync_at');
 
             // Add index for sync operations
             $table->index(['sync_status', 'offline_id'], 'stock_movements_sync_index');
@@ -27,7 +29,7 @@ return new class extends Migration
     {
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->dropIndex('stock_movements_sync_index');
-            $table->dropColumn(['sync_status', 'offline_id']);
+            $table->dropColumn(['sync_status', 'offline_id', 'last_sync_at', 'sync_metadata']);
         });
     }
 };

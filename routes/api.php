@@ -31,7 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 // Alternative sync routes for web-based authentication (stateful)
-Route::middleware(['web', 'auth'])->prefix('api')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::prefix('transactions')->group(function () {
         Route::post('/sync-web', [TransactionSyncController::class, 'sync'])->name('transactions.sync-web');
     });

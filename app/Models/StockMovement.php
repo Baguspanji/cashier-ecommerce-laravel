@@ -62,6 +62,9 @@ class StockMovement extends Model
         ?int $referenceId = null,
         ?string $referenceType = null,
         ?string $notes = null,
+        ?string $offlineId = null,
+        ?string $syncStatus = null,
+        ?string $lastSyncAt = null,
         ?int $userId = null
     ): self {
         $previousStock = $product->current_stock;
@@ -86,6 +89,9 @@ class StockMovement extends Model
             'reference_id' => $referenceId,
             'reference_type' => $referenceType,
             'notes' => $notes,
+            'offline_id' => $offlineId,
+            'sync_status' => $syncStatus,
+            'last_sync_at' => $lastSyncAt,
             'user_id' => $userId ?? Auth::id(),
         ]);
     }

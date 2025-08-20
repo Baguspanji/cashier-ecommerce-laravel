@@ -17,7 +17,6 @@ class TransactionItem extends Model
         'product_name',
         'quantity',
         'unit_price',
-        'price',
         'subtotal',
         'offline_id',
         'sync_status',

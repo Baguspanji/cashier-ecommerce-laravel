@@ -73,9 +73,11 @@ class TransactionSyncController extends Controller
                     $transaction = Transaction::create([
                         'transaction_number' => $transactionNumber,
                         'user_id' => $user->id,
-                        'customer_name' => $transactionData['customer_name'],
+                        'customer_name' => data_get('customer_name', null),
                         'total_amount' => $transactionData['total_amount'],
                         'payment_method' => $mappedPaymentMethod,
+                        'payment_amount' => $transactionData['payment_amount'],
+                        'change_amount' => $transactionData['change_amount'],
                         'offline_id' => $transactionData['offline_id'],
                         'sync_status' => 'synced',
                         'last_sync_at' => now(),
@@ -85,32 +87,34 @@ class TransactionSyncController extends Controller
                     // Create transaction items and update stock
                     foreach ($transactionData['items'] as $itemData) {
                         $product = Product::findOrFail($itemData['product_id']);
+                        $subtotal = $itemData['price'] * $itemData['quantity'];
 
                         // Create transaction item
                         $transactionItem = TransactionItem::create([
                             'transaction_id' => $transaction->id,
                             'product_id' => $product->id,
+                            'product_name' => $product->name,
                             'quantity' => $itemData['quantity'],
-                            'price' => $itemData['price'],
+                            'unit_price' => $product->price,
+                            'subtotal' => $subtotal,
                             'offline_id' => $itemData['offline_id'] ?? null,
                             'sync_status' => 'synced',
                             'last_sync_at' => now(),
                         ]);
 
-                        // Update product stock
-                        $product->decrement('stock', $itemData['quantity']);
-
-                        // Create stock movement
-                        StockMovement::create([
-                            'product_id' => $product->id,
-                            'user_id' => $user->id,
-                            'type' => 'sale',
-                            'quantity' => $itemData['quantity'],
-                            'notes' => "Sale - Transaction #{$transaction->id}",
-                            'offline_id' => $itemData['stock_movement_offline_id'] ?? null,
-                            'sync_status' => 'synced',
-                            'last_sync_at' => now(),
-                        ]);
+                        // Create stock movement and update product stock
+                        StockMovement::createMovement(
+                            $product,
+                            'out',
+                            $itemData['quantity'],
+                            referenceId: $transaction->id,
+                            referenceType: 'transaction',
+                            notes: "Sync Penjualan - {$transactionNumber}",
+                            offlineId: $itemData['stock_movement_offline_id'] ?? null,
+                            syncStatus: 'synced',
+                            lastSyncAt: now(),
+                            userId: $user->id,
+                        );
                     }
 
                     // Log successful sync

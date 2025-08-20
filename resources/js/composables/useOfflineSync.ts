@@ -17,25 +17,27 @@ export function useOfflineSync() {
         }
     };
 
-  // Store transaction offline
-  const storeOfflineTransaction = async (transaction: Omit<OfflineTransaction, 'offline_id' | 'stored_at'>) => {
-    try {
-      console.log('Storing offline transaction:', transaction);
-      const offline_id = await offlineSyncManager.storeTransaction(transaction);
-      await updatePendingCount();
+    // Store transaction offline
+    const storeOfflineTransaction = async (transaction: Omit<OfflineTransaction, 'offline_id' | 'stored_at'>) => {
+        try {
+            console.log('Storing offline transaction:', transaction);
+            const offline_id = await offlineSyncManager.storeTransaction(transaction);
+            await updatePendingCount();
 
-      // Try to sync immediately if online
-      if (isOnline.value) {
-        console.log('Online detected, attempting immediate sync...');
-        syncPendingTransactions();
-      }
+            // Try to sync immediately if online
+            if (isOnline.value) {
+                console.log('Online detected, attempting immediate sync...');
+                syncPendingTransactions();
+            }
 
-      return offline_id;
-    } catch (error) {
-      console.error('Failed to store offline transaction:', error);
-      throw error;
-    }
-  };    // Sync pending transactions
+            return offline_id;
+        } catch (error) {
+            console.error('Failed to store offline transaction:', error);
+            throw error;
+        }
+    };
+
+    // Sync pending transactions
     const syncPendingTransactions = async (): Promise<SyncResult | null> => {
         if (isSyncing.value || !isOnline.value) {
             console.log('Sync skipped - already syncing or offline');
