@@ -160,7 +160,7 @@ export class OfflineSyncManager {
       const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
       console.log('CSRF Token found:', !!csrfToken);
 
-      const response = await fetch('/api/transactions/sync', {
+      const response = await fetch('/api/transactions/sync-web', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,9 +214,7 @@ export class OfflineSyncManager {
         errors: [error instanceof Error ? error.message : 'Unknown error']
       };
     }
-  }
-
-  async getPendingCount(): Promise<number> {
+  }  async getPendingCount(): Promise<number> {
     const transactions = await this.getPendingTransactions();
     return transactions.length;
   }

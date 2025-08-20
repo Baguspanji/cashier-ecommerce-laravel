@@ -9,8 +9,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Sync API routes - using web middleware for stateful authentication
-Route::middleware(['web', 'auth'])->group(function () {
+// Sync API routes - using auth:sanctum for API authentication
+Route::middleware(['auth:sanctum'])->group(function () {
     // General sync endpoints
     Route::prefix('sync')->group(function () {
         Route::get('/status', [SyncController::class, 'status']);
@@ -27,5 +27,12 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/download', [TransactionSyncController::class, 'download']);
         Route::get('/sync-status', [TransactionSyncController::class, 'status']);
         Route::post('/resolve-conflict', [TransactionSyncController::class, 'resolveConflict']);
+    });
+});
+
+// Alternative sync routes for web-based authentication (stateful)
+Route::middleware(['web', 'auth'])->prefix('api')->group(function () {
+    Route::prefix('transactions')->group(function () {
+        Route::post('/sync-web', [TransactionSyncController::class, 'sync'])->name('transactions.sync-web');
     });
 });

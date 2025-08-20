@@ -67,8 +67,11 @@ class TransactionSyncController extends Controller
 
                     $mappedPaymentMethod = $paymentMethodMapping[$transactionData['payment_method']] ?? $transactionData['payment_method'];
 
+                    $transactionNumber = Transaction::generateTransactionNumber();
+
                     // Create the transaction
                     $transaction = Transaction::create([
+                        'transaction_number' => $transactionNumber,
                         'user_id' => $user->id,
                         'customer_name' => $transactionData['customer_name'],
                         'total_amount' => $transactionData['total_amount'],

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('transaction_number', 50)->unique();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('customer_name')->nullable();
             $table->decimal('total_amount', 10, 2);
             $table->string('payment_method', 50);
             $table->decimal('payment_amount', 10, 2);

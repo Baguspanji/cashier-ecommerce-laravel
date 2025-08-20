@@ -54,6 +54,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/test-offline-sync', function () {
             return Inertia::render('TestOfflineSync');
         })->name('test-offline-sync');
+
+        Route::get('/test-offline-sync-raw', function () {
+            return view('test-offline-sync');
+        })->name('test-offline-sync-raw');
     }
 });
 
