@@ -63,7 +63,7 @@ class StockMovement extends Model
         ?string $referenceType = null,
         ?string $notes = null,
         ?string $offlineId = null,
-        ?string $syncStatus = null,
+        ?string $syncStatus = 'synced',
         ?string $lastSyncAt = null,
         ?int $userId = null
     ): self {
