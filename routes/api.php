@@ -9,8 +9,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Sync API routes
-Route::middleware('auth:sanctum')->group(function () {
+// Sync API routes - using web middleware for stateful authentication
+Route::middleware(['web', 'auth'])->group(function () {
     // General sync endpoints
     Route::prefix('sync')->group(function () {
         Route::get('/status', [SyncController::class, 'status']);

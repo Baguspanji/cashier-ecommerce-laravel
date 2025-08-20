@@ -25,7 +25,7 @@ class TransactionFactory extends Factory
             'transaction_number' => Transaction::generateTransactionNumber(),
             'user_id' => User::factory(),
             'total_amount' => $totalAmount,
-            'payment_method' => $this->faker->randomElement(['cash', 'debit', 'credit', 'e-wallet']),
+            'payment_method' => $this->faker->randomElement(['cash', 'debit', 'credit', 'e_wallet']),
             'payment_amount' => $paymentAmount,
             'change_amount' => $paymentAmount - $totalAmount,
             'status' => 'completed',

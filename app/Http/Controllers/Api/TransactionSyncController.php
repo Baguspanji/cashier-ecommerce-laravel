@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Data\CreateTransactionData;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateTransactionRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\SyncLog;
@@ -27,7 +25,7 @@ class TransactionSyncController extends Controller
             'transactions.*.offline_id' => 'required|string',
             'transactions.*.customer_name' => 'nullable|string|max:255',
             'transactions.*.total_amount' => 'required|numeric|min:0',
-            'transactions.*.payment_method' => 'required|in:cash,bank_transfer,e_wallet',
+            'transactions.*.payment_method' => 'required|in:cash,bank_transfer,e_wallet,debit,credit,e-wallet',
             'transactions.*.items' => 'required|array|min:1',
             'transactions.*.items.*.product_id' => 'required|exists:products,id',
             'transactions.*.items.*.quantity' => 'required|integer|min:1',
@@ -53,15 +51,28 @@ class TransactionSyncController extends Controller
                             'message' => 'Transaction already synced',
                             'transaction_id' => $existingTransaction->id,
                         ];
+
                         continue;
                     }
+
+                    // Map payment method from frontend to backend format
+                    $paymentMethodMapping = [
+                        'cash' => 'cash',
+                        'bank_transfer' => 'debit',
+                        'e_wallet' => 'e-wallet',
+                        'e-wallet' => 'e-wallet',
+                        'debit' => 'debit',
+                        'credit' => 'credit',
+                    ];
+
+                    $mappedPaymentMethod = $paymentMethodMapping[$transactionData['payment_method']] ?? $transactionData['payment_method'];
 
                     // Create the transaction
                     $transaction = Transaction::create([
                         'user_id' => $user->id,
                         'customer_name' => $transactionData['customer_name'],
                         'total_amount' => $transactionData['total_amount'],
-                        'payment_method' => $transactionData['payment_method'],
+                        'payment_method' => $mappedPaymentMethod,
                         'offline_id' => $transactionData['offline_id'],
                         'sync_status' => 'synced',
                         'last_sync_at' => now(),
@@ -254,7 +265,7 @@ class TransactionSyncController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$serverTransaction) {
+        if (! $serverTransaction) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Transaction not found on server',

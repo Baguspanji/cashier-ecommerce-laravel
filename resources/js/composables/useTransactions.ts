@@ -10,7 +10,7 @@ export interface Transaction {
         name: string
     }
     total_amount: string
-    payment_method: 'cash' | 'debit' | 'credit' | 'e-wallet'
+    payment_method: 'cash' | 'debit' | 'credit' | 'e_wallet'
     payment_amount: string
     change_amount: string
     status: 'pending' | 'completed' | 'cancelled'

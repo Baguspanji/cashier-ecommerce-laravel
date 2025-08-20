@@ -144,6 +144,7 @@ export class OfflineSyncManager {
     const pendingTransactions = await this.getPendingTransactions();
 
     if (pendingTransactions.length === 0) {
+      console.log('No pending transactions to sync');
       return {
         success: true,
         syncedCount: 0,
@@ -152,22 +153,35 @@ export class OfflineSyncManager {
       };
     }
 
+    console.log(`Syncing ${pendingTransactions.length} pending transactions...`);
+
     try {
+      // Get CSRF token from meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      console.log('CSRF Token found:', !!csrfToken);
+
       const response = await fetch('/api/transactions/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
+          ...(csrfToken && { 'X-CSRF-TOKEN': csrfToken }),
         },
+        credentials: 'same-origin', // Include cookies for session authentication
         body: JSON.stringify({ transactions: pendingTransactions }),
       });
 
+      console.log('Sync response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Sync response error:', errorText);
         throw new Error(`Sync failed: ${response.statusText}`);
       }
 
       const result = await response.json();
+      console.log('Sync result:', result);
 
       if (result.status === 'success') {
         // Remove successfully synced transactions
@@ -175,6 +189,7 @@ export class OfflineSyncManager {
           ?.filter((r: any) => r.status === 'success')
           ?.map((r: any) => r.offline_id) || [];
 
+        console.log(`Removing ${syncedIds.length} successfully synced transactions`);
         for (const id of syncedIds) {
           await this.removeSyncedTransaction(id);
         }

@@ -158,10 +158,21 @@ const checkout = async () => {
     } else {
         // Offline mode: store transaction locally
         try {
+            // Map payment method for offline sync
+            const mapPaymentMethod = (method: 'cash' | 'debit' | 'credit' | 'e-wallet'): 'cash' | 'bank_transfer' | 'e_wallet' => {
+                switch (method) {
+                    case 'cash': return 'cash';
+                    case 'debit':
+                    case 'credit': return 'bank_transfer';
+                    case 'e-wallet': return 'e_wallet';
+                    default: return 'cash';
+                }
+            };
+
             const offlineTransaction = {
                 customer_name: undefined, // Optional for POS
                 total_amount: totalAmount.value,
-                payment_method: paymentMethod.value as 'cash' | 'bank_transfer' | 'e_wallet',
+                payment_method: mapPaymentMethod(paymentMethod.value),
                 items: cart.value.map(item => ({
                     product_id: item.product.id,
                     quantity: item.quantity,
