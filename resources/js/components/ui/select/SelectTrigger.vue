@@ -1,25 +1,24 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { SelectTrigger, type SelectTriggerProps } from 'reka-ui'
-import { cn } from '@/lib/utils'
+import type { SelectTriggerProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { reactiveOmit } from "@vueuse/core"
+import { SelectTrigger, useForwardProps } from "reka-ui"
+import { cn } from "@/lib/utils"
 
-interface Props extends SelectTriggerProps {
-  class?: HTMLAttributes['class']
-}
+const props = defineProps<SelectTriggerProps & { class?: HTMLAttributes["class"] }>()
 
-const props = defineProps<Props>()
+const delegatedProps = reactiveOmit(props, "class")
+
+const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
   <SelectTrigger
-    data-slot="select-trigger"
-    v-bind="props"
-    :class="
-      cn(
-        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
-        props.class,
-      )
-    "
+    v-bind="forwardedProps"
+    :class="cn(
+      'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate text-start',
+      props.class,
+    )"
   >
     <slot />
     <svg
