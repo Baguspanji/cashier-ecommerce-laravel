@@ -11,7 +11,7 @@ import { type Category } from '@/composables/useCategories'
 import { ArrowLeftIcon } from 'lucide-vue-next'
 import AppPageHeader from '@/components/AppPageHeader.vue'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface Props {
     product: Product
@@ -29,6 +29,7 @@ const form = reactive<ProductData>({
     description: props.product.description || '',
     category_id: props.product.category_id,
     price: parseFloat(props.product.price),
+    price_purchase: parseFloat(String(props.product.price_purchase || '0')) || 0,
     current_stock: props.product.current_stock,
     minimum_stock: props.product.minimum_stock,
     is_active: props.product.is_active,
@@ -105,28 +106,50 @@ const handleCancel = () => {
                                     <Label for="category">Kategori</Label>
                                     <Select v-model="form.category_id" class="h-10">
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Semua Kategori" />
+                                            <SelectValue placeholder="Pilih Kategori" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">Semua Kategori</SelectItem>
-                                            <SelectItem v-for="category in props.categories" :key="category.id"
-                                                :value="category.id">
-                                                {{ category.name }}
-                                            </SelectItem>
+                                            <SelectGroup>
+                                                <SelectLabel>Kategori Produk</SelectLabel>
+                                                <SelectItem v-for="category in props.categories" :key="category.id"
+                                                    :value="category.id">
+                                                    {{ category.name }}
+                                                </SelectItem>
+                                            </SelectGroup>
                                         </SelectContent>
                                     </Select>
+
                                     <div v-if="errors.category_id" class="text-sm text-destructive">
                                         {{ errors.category_id }}
                                     </div>
                                 </div>
 
                                 <!-- Price -->
-                                <div class="grid gap-2">
-                                    <Label for="price">Harga</Label>
-                                    <Input id="price" v-model.number="form.price" type="number" min="0" step="500"
-                                        placeholder="0" :disabled="loading" />
-                                    <div v-if="errors.price" class="text-sm text-destructive">
-                                        {{ errors.price }}
+                                <div class="grid gap-4 md:grid-cols-2">
+                                    <div class="grid gap-2">
+                                        <Label for="price_purchase">Harga Beli</Label>
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-[40%] h-4 w-4 -translate-y-1/2 text-muted-foreground">Rp</span>
+                                            <Input id="price_purchase" v-model.number="form.price_purchase"
+                                                type="number" min="0" placeholder="0" :disabled="loading"
+                                                class="pl-10" />
+                                        </div>
+                                        <div v-if="errors.price_purchase" class="text-sm text-destructive">
+                                            {{ errors.price_purchase }}
+                                        </div>
+                                    </div>
+                                    <div class="grid gap-2">
+                                        <Label for="price">Harga Jual</Label>
+                                        <div class="relative">
+                                            <span
+                                                class="absolute left-3 top-[40%] h-4 w-4 -translate-y-1/2 text-muted-foreground">Rp</span>
+                                            <Input id="price" v-model.number="form.price" type="number" min="0"
+                                                placeholder="0" :disabled="loading" class="pl-10" />
+                                        </div>
+                                        <div v-if="errors.price" class="text-sm text-destructive">
+                                            {{ errors.price }}
+                                        </div>
                                     </div>
                                 </div>
 

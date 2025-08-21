@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCartIcon, TagIcon, StarIcon, SearchIcon } from 'lucide-vue-next';
+import { ShoppingCartIcon, TagIcon, StarIcon } from 'lucide-vue-next';
 
 interface Product {
     id: number;
@@ -62,12 +62,6 @@ const isAuthenticated = computed(() => {
 </script>
 
 <template>
-
-    <Head title="Welcome - Cashier E-commerce">
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    </Head>
-
     <div
         class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
         <!-- Header -->
@@ -119,19 +113,16 @@ const isAuthenticated = computed(() => {
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button v-if="!isAuthenticated" as-child size="lg"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
-                            <Link :href="route('register')">
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 w-64">
+                            <Link :href="route('login')">
                             Mulai Sekarang
                             </Link>
                         </Button>
-                        <Button v-else as-child size="lg" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3">
+                        <Button v-else as-child size="lg"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 w-64">
                             <Link :href="route('dashboard')">
                             Buka Dashboard
                             </Link>
-                        </Button>
-                        <Button variant="outline" size="lg" class="px-8 py-3">
-                            <SearchIcon class="w-4 h-4 mr-2" />
-                            Jelajahi Produk
                         </Button>
                     </div>
                 </div>

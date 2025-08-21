@@ -29,6 +29,7 @@ class TransactionItemFactory extends Factory
             'product_name' => $product->name,
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
+            'price_purchase' => $product->price_purchase,
             'subtotal' => $subtotal,
         ];
     }
@@ -46,6 +47,7 @@ class TransactionItemFactory extends Factory
                 'product_id' => $product->id,
                 'product_name' => $product->name,
                 'unit_price' => $product->price,
+                'price_purchase' => $product->price_purchase,
                 'quantity' => $quantity,
                 'subtotal' => $subtotal,
             ];

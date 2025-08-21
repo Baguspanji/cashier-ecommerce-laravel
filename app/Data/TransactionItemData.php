@@ -23,6 +23,8 @@ class TransactionItemData extends Data
         public int $quantity,
         #[Required, Numeric, Min(0)]
         public float $unit_price,
+        #[Numeric, Min(0)]
+        public float $price_purchase,
         #[Required, Numeric, Min(0)]
         public float $subtotal,
         public ?ProductData $product = null,

@@ -94,7 +94,7 @@ test('stock movement can create movement and update product stock for out type',
         ->and($product->current_stock)->toBe(35);
 });
 
-test('stock movement prevents negative stock', function () {
+test('stock movement allows negative stock', function () {
     $user = User::factory()->create();
     Auth::login($user);
 
@@ -108,8 +108,8 @@ test('stock movement prevents negative stock', function () {
 
     $product->refresh();
 
-    expect($stockMovement->new_stock)->toBe(0)
-        ->and($product->current_stock)->toBe(0);
+    expect($stockMovement->new_stock)->toBe(-5)
+        ->and($product->current_stock)->toBe(-5);
 });
 
 test('stock movement factory creates valid movement', function () {

@@ -16,6 +16,7 @@ class TransactionData extends Data
         public ?int $id,
         public int $user_id,
         public float $total_amount,
+        public float $income,
         public string $payment_method,
         public float $payment_amount,
         public float $change_amount = 0.0,

@@ -76,8 +76,8 @@ class StockMovement extends Model
             default => $previousStock,
         };
 
-        // Update product stock
-        $product->update(['current_stock' => max(0, $newStock)]);
+        // Update product stock - allow negative values
+        $product->update(['current_stock' => $newStock]);
 
         // Create movement record
         return static::create([
@@ -85,7 +85,7 @@ class StockMovement extends Model
             'type' => $type,
             'quantity' => $quantity,
             'previous_stock' => $previousStock,
-            'new_stock' => max(0, $newStock),
+            'new_stock' => $newStock,
             'reference_id' => $referenceId,
             'reference_type' => $referenceType,
             'notes' => $notes,

@@ -64,6 +64,7 @@ class TransactionController extends Controller
         $summary = [
             'total_transactions' => $allTransactions->count(),
             'total_revenue' => $allTransactions->sum('total_amount'),
+            'total_income' => $allTransactions->sum('income'),
             'total_items_sold' => $allTransactions->sum(fn ($t) => $t->items->sum('quantity')),
             'average_transaction' => $allTransactions->count() > 0 ? $allTransactions->avg('total_amount') : 0,
         ];
@@ -102,6 +103,7 @@ class TransactionController extends Controller
                 return [
                     'date' => $date,
                     'total_amount' => $dayTransactions->sum('total_amount'),
+                    'total_income' => $dayTransactions->sum('income'),
                     'transaction_count' => $dayTransactions->count(),
                 ];
             })
@@ -160,7 +162,6 @@ class TransactionController extends Controller
 
         $products = Product::with('category')
             ->where('is_active', true)
-            ->where('current_stock', '>', 0)
             ->orderBy('name')
             ->get();
 
@@ -182,23 +183,24 @@ class TransactionController extends Controller
 
             // Calculate totals
             $totalAmount = 0;
+            $totalIncome = 0; // Add income calculation
             $items = [];
 
             foreach ($data->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
 
-                // Check stock availability
-                if ($product->current_stock < $item['quantity']) {
-                    throw new \Exception("Stok produk {$product->name} tidak mencukupi.");
-                }
-
                 $subtotal = $product->price * $item['quantity'];
+                $purchaseCost = $product->price_purchase * $item['quantity'];
+                $itemIncome = $subtotal - $purchaseCost;
+
                 $totalAmount += $subtotal;
+                $totalIncome += $itemIncome;
 
                 $items[] = [
                     'product' => $product,
                     'quantity' => $item['quantity'],
                     'unit_price' => $product->price,
+                    'price_purchase' => $product->price_purchase,
                     'subtotal' => $subtotal,
                 ];
             }
@@ -214,6 +216,7 @@ class TransactionController extends Controller
                 'transaction_number' => $transactionNumber,
                 'user_id' => Auth::id(),
                 'total_amount' => $totalAmount,
+                'income' => $totalIncome,
                 'payment_method' => $data->payment_method,
                 'payment_amount' => $data->payment_amount,
                 'change_amount' => $changeAmount,
@@ -230,6 +233,7 @@ class TransactionController extends Controller
                     'product_name' => $item['product']->name,
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
+                    'price_purchase' => $item['price_purchase'],
                     'subtotal' => $item['subtotal'],
                 ]);
 
@@ -244,8 +248,7 @@ class TransactionController extends Controller
                 );
             }
 
-            return redirect()->route('transactions.show', $transaction)
-                ->with('success', 'Transaksi berhasil diproses.');
+            return redirect()->route('transactions.show', $transaction);
         });
     }
 
@@ -267,6 +270,7 @@ class TransactionController extends Controller
         $summary = [
             'total_transactions' => $transactions->count(),
             'total_amount' => $transactions->sum('total_amount'),
+            'total_income' => $transactions->sum('income'),
             'total_items_sold' => $transactions->sum(function ($transaction) {
                 return $transaction->items->sum('quantity');
             }),

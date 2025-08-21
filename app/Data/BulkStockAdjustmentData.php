@@ -22,7 +22,7 @@ class BulkStockAdjustmentData extends Data
     {
         return [
             'adjustments.*.product_id' => ['required', 'exists:products,id'],
-            'adjustments.*.new_stock' => ['required', 'integer', 'min:0'],
+            'adjustments.*.new_stock' => ['required', 'integer'],
         ];
     }
 }

@@ -173,7 +173,7 @@ const cancelDelete = () => {
                                 <SearchIcon
                                     class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input id="search" v-model="search" placeholder="Nama atau deskripsi..."
-                                    class="pl-10" />
+                                    class="pl-10 h-10" />
                             </div>
                         </div>
 

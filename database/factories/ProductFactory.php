@@ -17,11 +17,14 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+        $price = $this->faker->randomFloat(2, 1000, 100000);
+
         return [
             'name' => $this->faker->word() . ' ' . $this->faker->word() . ' ' . $this->faker->word(),
             'barcode' => $this->faker->unique()->ean13(),
             'description' => $this->faker->paragraph(),
-            'price' => $this->faker->randomFloat(2, 1000, 100000), // Price between 1000-100000
+            'price' => $price,
+            'price_purchase' => $price + $this->faker->randomFloat(2, 100, 1000),
             'image_path' => null,
             'category_id' => Category::factory(),
             'current_stock' => $this->faker->numberBetween(0, 100),

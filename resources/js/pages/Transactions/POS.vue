@@ -20,7 +20,7 @@ import {
     BanknoteIcon,
     SmartphoneIcon,
     SearchIcon,
-    ScanIcon,
+    // ScanIcon,
     WifiOffIcon,
     WifiIcon
 } from 'lucide-vue-next'
@@ -82,15 +82,11 @@ const formatPrice = (price: string | number) => {
 }
 
 const addToCart = (product: Product) => {
-    if (product.current_stock <= 0) return
-
     const existingItem = cart.value.find(item => item.product.id === product.id)
 
     if (existingItem) {
-        if (existingItem.quantity < product.current_stock) {
-            existingItem.quantity++
-            existingItem.subtotal = existingItem.quantity * parseFloat(product.price)
-        }
+        existingItem.quantity++
+        existingItem.subtotal = existingItem.quantity * parseFloat(product.price)
     } else {
         cart.value.push({
             product,
@@ -105,7 +101,7 @@ const updateQuantity = (productId: number, quantity: number) => {
     if (item) {
         if (quantity <= 0) {
             removeFromCart(productId)
-        } else if (quantity <= item.product.current_stock) {
+        } else {
             item.quantity = quantity
             item.subtotal = quantity * parseFloat(item.product.price)
         }
@@ -236,7 +232,7 @@ const handleBarcodeScanned = (barcode: string) => {
     const product = props.products.find(p => p.barcode === barcode)
 
     if (product) {
-        if (product.current_stock > 0 && product.is_active) {
+        if (product.is_active) {
             addToCart(product)
             addNotification({
                 type: 'success',
@@ -246,8 +242,8 @@ const handleBarcodeScanned = (barcode: string) => {
         } else {
             addNotification({
                 type: 'warning',
-                title: 'Produk Tidak Tersedia',
-                message: `${product.name} sedang tidak tersedia atau stok habis`
+                title: 'Produk Tidak Aktif',
+                message: `${product.name} sedang tidak aktif`
             })
         }
     } else {
@@ -261,9 +257,9 @@ const handleBarcodeScanned = (barcode: string) => {
     }
 }
 
-const openBarcodeScanner = () => {
-    showBarcodeScanner.value = true
-}
+// const openBarcodeScanner = () => {
+//     showBarcodeScanner.value = true
+// }
 
 const closeBarcodeScanner = () => {
     showBarcodeScanner.value = false
@@ -301,12 +297,13 @@ const closeBarcodeScanner = () => {
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <Button @click="openBarcodeScanner" variant="outline" size="sm">
+                        <!-- <Button @click="openBarcodeScanner" variant="outline" size="sm">
                             <ScanIcon class="mr-2 h-4 w-4" />
                             Scan Barcode
-                        </Button>
+                        </Button> -->
                         <div class="relative">
-                            <SearchIcon class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <SearchIcon
+                                class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input v-model="search" placeholder="Cari produk/barcode..." class="pl-10 w-64" />
                         </div>
                     </div>
@@ -319,16 +316,18 @@ const closeBarcodeScanner = () => {
                             <div class="space-y-2">
                                 <div>
                                     <h4 class="font-medium text-sm leading-tight">{{ product.name }}</h4>
-                                    <p class="text-xs text-muted-foreground">{{ product.category?.name || 'Tanpa Kategori' }}</p>
+                                    <p class="text-xs text-muted-foreground">
+                                        {{ product.category?.name || 'Tanpa Kategori' }}
+                                    </p>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
                                     <div class="text-xs text-muted-foreground">Stok: {{ product.current_stock }}</div>
                                 </div>
-                                <Button size="sm" class="w-full h-7 text-xs" :disabled="product.current_stock === 0"
-                                    @click="addToCart(product)">
+                                <Button size="sm" class="w-full h-7 text-xs" @click="addToCart(product)"
+                                    :disabled="!product.is_active">
                                     <PlusIcon class="mr-1 h-3 w-3" />
-                                    {{ product.current_stock === 0 ? 'Habis' : 'Tambah' }}
+                                    Tambah
                                 </Button>
                             </div>
                         </CardContent>
@@ -372,8 +371,7 @@ const closeBarcodeScanner = () => {
                                     <span class="w-8 text-center text-sm">{{ item.quantity }}</span>
 
                                     <Button variant="outline" size="icon" class="h-6 w-6"
-                                        @click="updateQuantity(item.product.id, item.quantity + 1)"
-                                        :disabled="item.quantity >= item.product.current_stock">
+                                        @click="updateQuantity(item.product.id, item.quantity + 1)">
                                         <PlusIcon class="h-3 w-3" />
                                     </Button>
 
@@ -426,26 +424,14 @@ const closeBarcodeScanner = () => {
 
                             <!-- Quick Payment Buttons -->
                             <div class="grid grid-cols-3 gap-2 mt-2">
-                                <Button
-                                    v-for="amount in quickPaymentAmounts"
-                                    :key="amount"
-                                    variant="outline"
-                                    size="sm"
-                                    @click="setPaymentAmount(amount)"
-                                    :disabled="amount < totalAmount"
-                                    class="text-xs"
-                                >
+                                <Button v-for="amount in quickPaymentAmounts" :key="amount" variant="outline" size="sm"
+                                    @click="setPaymentAmount(amount)" :disabled="amount < totalAmount" class="text-xs">
                                     {{ formatPrice(amount) }}
                                 </Button>
                             </div>
 
                             <!-- Exact Amount Button -->
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                @click="setPaymentAmount(totalAmount)"
-                                class="mt-1"
-                            >
+                            <Button variant="outline" size="sm" @click="setPaymentAmount(totalAmount)" class="mt-1">
                                 Uang Pas ({{ formatPrice(totalAmount) }})
                             </Button>
 
@@ -468,12 +454,14 @@ const closeBarcodeScanner = () => {
 
                         <!-- Actions -->
                         <div class="space-y-2 pt-4">
-                            <div v-if="!isOnline" class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 p-2 rounded-md">
+                            <div v-if="!isOnline"
+                                class="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 p-2 rounded-md">
                                 <WifiOffIcon class="h-4 w-4" />
                                 <span>Mode Offline - Transaksi akan disinkronkan nanti</span>
                             </div>
 
-                            <Button @click="checkout" :disabled="!canCheckout || loading || isSyncing" class="w-full" size="lg">
+                            <Button @click="checkout" :disabled="!canCheckout || loading || isSyncing" class="w-full"
+                                size="lg">
                                 <WifiOffIcon v-if="!isOnline" class="h-4 w-4 mr-2" />
                                 <WifiIcon v-else class="h-4 w-4 mr-2" />
                                 {{ loading || isSyncing ? 'Memproses...' : isOnline ? 'Bayar' : 'Bayar (Offline)' }}
@@ -489,11 +477,7 @@ const closeBarcodeScanner = () => {
         </div>
 
         <!-- Barcode Scanner Modal -->
-        <BarcodeScanner
-            :is-open="showBarcodeScanner"
-            title="Scan Product Barcode"
-            @scanned="handleBarcodeScanned"
-            @close="closeBarcodeScanner"
-        />
+        <BarcodeScanner :is-open="showBarcodeScanner" title="Scan Product Barcode" @scanned="handleBarcodeScanned"
+            @close="closeBarcodeScanner" />
     </AppLayout>
 </template>

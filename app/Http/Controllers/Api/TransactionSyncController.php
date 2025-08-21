@@ -69,12 +69,21 @@ class TransactionSyncController extends Controller
 
                     $transactionNumber = Transaction::generateTransactionNumber();
 
+                    // Calculate income from items
+                    $totalIncome = 0;
+                    foreach ($transactionData['items'] as $itemData) {
+                        $product = Product::findOrFail($itemData['product_id']);
+                        $itemIncome = ($itemData['price'] - $product->price_purchase) * $itemData['quantity'];
+                        $totalIncome += $itemIncome;
+                    }
+
                     // Create the transaction
                     $transaction = Transaction::create([
                         'transaction_number' => $transactionNumber,
                         'user_id' => $user->id,
                         'customer_name' => data_get('customer_name', null),
                         'total_amount' => $transactionData['total_amount'],
+                        'income' => $totalIncome,
                         'payment_method' => $mappedPaymentMethod,
                         'payment_amount' => $transactionData['payment_amount'],
                         'change_amount' => $transactionData['change_amount'],
@@ -95,7 +104,8 @@ class TransactionSyncController extends Controller
                             'product_id' => $product->id,
                             'product_name' => $product->name,
                             'quantity' => $itemData['quantity'],
-                            'unit_price' => $product->price,
+                            'unit_price' => $itemData['price'],
+                            'price_purchase' => $product->price_purchase,
                             'subtotal' => $subtotal,
                             'offline_id' => $itemData['offline_id'] ?? null,
                             'sync_status' => 'synced',

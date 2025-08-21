@@ -25,6 +25,7 @@ class TransactionFactory extends Factory
             'transaction_number' => Transaction::generateTransactionNumber(),
             'user_id' => User::factory(),
             'total_amount' => $totalAmount,
+            'income' => $this->faker->randomFloat(2, $totalAmount * 0.1, $totalAmount * 0.5), // 10-50% profit margin
             'payment_method' => $this->faker->randomElement(['cash', 'debit', 'credit', 'e_wallet']),
             'payment_amount' => $paymentAmount,
             'change_amount' => $paymentAmount - $totalAmount,

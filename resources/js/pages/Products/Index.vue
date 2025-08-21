@@ -203,32 +203,21 @@ const cancelDelete = () => {
                     <CardContent>
                         <div class="space-y-2">
                             <!-- Header with actions -->
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-medium text-sm leading-tight truncate">{{ product.name }}</h4>
-                                    <p class="text-xs text-muted-foreground truncate">{{ product.category?.name ||
-                                        'Tanpa Kategori'
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-medium text-sm leading-tight truncate">{{ product.name }}</h4>
+                                <p class="text-xs text-muted-foreground truncate">{{ product.category?.name ||
+                                    'Tanpa Kategori'
                                     }}</p>
-                                </div>
-                                <div class="flex space-x-1 ml-2">
-                                    <Button variant="ghost" size="icon" @click.stop="visitShow(product.id)" class="h-6 w-6 cursor-pointer"
-                                        :data-testid="`view-product-${product.id}`">
-                                        <EyeIcon class="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" @click.stop="visitEdit(product.id)" class="h-6 w-6 cursor-pointer"
-                                        :data-testid="`edit-product-${product.id}`">
-                                        <PencilIcon class="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" @click.stop="handleDelete(product)" class="h-6 w-6 cursor-pointer"
-                                        :data-testid="`delete-product-${product.id}`">
-                                        <TrashIcon class="h-3 w-3" />
-                                    </Button>
-                                </div>
                             </div>
 
                             <!-- Price and stock -->
                             <div class="flex items-center justify-between">
-                                <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
+                                <div class="flex flex-col">
+                                    <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
+                                    <div class="text-xs text-muted-foreground" v-if="product.price_purchase != 0">
+                                        {{ formatPrice((product.price_purchase ?? 0).toString()) }}
+                                    </div>
+                                </div>
                                 <Badge :variant="getStockStatus(product).variant" class="text-xs">
                                     <component :is="getStockStatus(product).icon" class="mr-1 h-2 w-2" />
                                     {{ getStockStatus(product).label }}
@@ -242,6 +231,21 @@ const cancelDelete = () => {
 
                             <!-- Status and toggle -->
                             <div class="flex items-center justify-between">
+                                <div class="flex space-x-1">
+                                    <Button variant="ghost" size="icon" @click.stop="visitShow(product.id)"
+                                        class="h-6 w-6 cursor-pointer" :data-testid="`view-product-${product.id}`">
+                                        <EyeIcon class="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" @click.stop="visitEdit(product.id)"
+                                        class="h-6 w-6 cursor-pointer" :data-testid="`edit-product-${product.id}`">
+                                        <PencilIcon class="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" @click.stop="handleDelete(product)"
+                                        class="h-6 w-6 cursor-pointer" :data-testid="`delete-product-${product.id}`">
+                                        <TrashIcon class="h-3 w-3" />
+                                    </Button>
+                                </div>
+
                                 <Badge :variant="product.is_active ? 'default' : 'secondary'" class="text-xs">
                                     {{ product.is_active ? 'Aktif' : 'Non-aktif' }}
                                 </Badge>

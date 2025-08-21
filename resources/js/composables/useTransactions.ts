@@ -10,6 +10,7 @@ export interface Transaction {
         name: string
     }
     total_amount: string
+    income: string
     payment_method: 'cash' | 'debit' | 'credit' | 'e_wallet'
     payment_amount: string
     change_amount: string
@@ -34,6 +35,7 @@ export interface TransactionItem {
     product_name: string
     quantity: number
     unit_price: string
+    price_purchase: string
     subtotal: string
 }
 

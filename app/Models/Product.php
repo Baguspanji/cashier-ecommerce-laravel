@@ -17,6 +17,7 @@ class Product extends Model
         'barcode',
         'description',
         'price',
+        'price_purchase',
         'image_path',
         'category_id',
         'current_stock',
@@ -26,6 +27,7 @@ class Product extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'price_purchase' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 
@@ -77,12 +79,12 @@ class Product extends Model
         // Generate EAN-13 compatible barcode based on product ID
         $prefix = '200'; // Internal product prefix
         $productId = str_pad((string) $this->id, 9, '0', STR_PAD_LEFT);
-        $code = $prefix . $productId;
+        $code = $prefix.$productId;
 
         // Calculate check digit for EAN-13
         $checkDigit = $this->calculateEan13CheckDigit($code);
 
-        return $code . $checkDigit;
+        return $code.$checkDigit;
     }
 
     /**

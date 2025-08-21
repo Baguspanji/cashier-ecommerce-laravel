@@ -12,6 +12,7 @@ export interface Product {
         name: string
     }
     price: string
+    price_purchase?: number
     image_path?: string
     current_stock: number
     minimum_stock: number
@@ -26,6 +27,7 @@ export interface ProductData {
     description?: string
     category_id: number
     price: number
+    price_purchase?: number
     current_stock: number
     minimum_stock: number
     is_active?: boolean

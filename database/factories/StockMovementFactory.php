@@ -25,7 +25,7 @@ class StockMovementFactory extends Factory
         // Calculate new stock based on movement type
         $newStock = match ($type) {
             'in', 'adjustment' => $previousStock + $quantity,
-            'out' => max(0, $previousStock - $quantity),
+            'out' => $previousStock - $quantity,
             default => $previousStock,
         };
 
@@ -72,7 +72,7 @@ class StockMovementFactory extends Factory
             return [
                 'type' => 'out',
                 'quantity' => $quantity,
-                'new_stock' => max(0, $previousStock - $quantity),
+                'new_stock' => $previousStock - $quantity,
                 'reference_type' => 'transaction',
             ];
         });

@@ -20,6 +20,7 @@ class Transaction extends Model
         'payment_method',
         'payment_amount',
         'change_amount',
+        'income',
         'status',
         'notes',
         'offline_id',
@@ -32,6 +33,7 @@ class Transaction extends Model
         'total_amount' => 'decimal:2',
         'payment_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',
+        'income' => 'decimal:2',
         'sync_metadata' => 'array',
         'last_sync_at' => 'datetime',
     ];
@@ -61,6 +63,6 @@ class Transaction extends Model
         $date = now()->format('Ymd');
         $count = static::whereDate('created_at', today())->count() + 1;
 
-        return $prefix . $date . str_pad($count, 4, '0', STR_PAD_LEFT);
+        return $prefix.$date.str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 }

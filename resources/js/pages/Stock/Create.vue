@@ -222,7 +222,7 @@ addBulkAdjustment()
                                             const quantity = singleForm.quantity || 0
 
                                             if (singleForm.type === 'in') return currentStock + quantity
-                                            if (singleForm.type === 'out') return Math.max(0, currentStock - quantity)
+                                            if (singleForm.type === 'out') return currentStock - quantity
                                             return quantity // For adjustment type, quantity is new stock
                                         })()
                                     }} pcs

@@ -68,12 +68,6 @@ class StockController extends Controller
 
         $product = Product::findOrFail($data->product_id);
 
-        // For 'out' movements, check if sufficient stock is available
-        if ($data->type === 'out' && $product->current_stock < $data->quantity) {
-            return redirect()->back()
-                ->withErrors(['quantity' => 'Stok tidak mencukupi untuk pengurangan ini.']);
-        }
-
         // Create stock movement
         StockMovement::createMovement(
             $product,

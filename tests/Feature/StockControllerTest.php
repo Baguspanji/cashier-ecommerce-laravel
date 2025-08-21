@@ -266,7 +266,7 @@ describe('StockController Store', function () {
         ]);
     });
 
-    it('validates insufficient stock for out movement', function () {
+    it('allows stock movements that would result in negative stock', function () {
         $user = User::factory()->create(['role' => UserRole::Admin]);
         $category = Category::factory()->create();
         $product = Product::factory()->create([
@@ -278,23 +278,24 @@ describe('StockController Store', function () {
             'product_id' => $product->id,
             'type' => 'out',
             'quantity' => 10, // More than available stock
-            'notes' => 'Trying to remove too much',
+            'notes' => 'Allowing negative stock',
         ];
 
         $response = $this->actingAs($user)
             ->post(route('stock.store'), $stockData);
 
-        $response->assertRedirect()
-            ->assertSessionHasErrors(['quantity' => 'Stok tidak mencukupi untuk pengurangan ini.']);
+        $response->assertRedirect(route('stock.index'))
+            ->assertSessionHas('success', 'Stok pengurangan berhasil dicatat.');
 
-        $this->assertDatabaseMissing('stock_movements', [
+        $this->assertDatabaseHas('stock_movements', [
             'product_id' => $product->id,
             'quantity' => 10,
+            'type' => 'out',
         ]);
 
-        // Check product stock was not changed
+        // Check product stock went negative
         $product->refresh();
-        $this->assertEquals(5, $product->current_stock);
+        $this->assertEquals(-5, $product->current_stock); // 5 - 10 = -5
     });
 
     it('validates required fields when creating stock movement', function () {
@@ -707,10 +708,13 @@ describe('StockController Bulk Adjustment', function () {
         $response->assertSessionHasErrors(['adjustments.0.product_id']);
     });
 
-    it('validates new stock is non-negative in bulk adjustment', function () {
+    it('allows negative stock in bulk adjustment', function () {
         $user = User::factory()->create(['role' => UserRole::Admin]);
         $category = Category::factory()->create();
-        $product = Product::factory()->create(['category_id' => $category->id]);
+        $product = Product::factory()->create([
+            'category_id' => $category->id,
+            'current_stock' => 10
+        ]);
 
         $adjustmentData = [
             'adjustments' => [
@@ -719,12 +723,26 @@ describe('StockController Bulk Adjustment', function () {
                     'new_stock' => -5,
                 ],
             ],
+            'notes' => 'Allowing negative stock',
         ];
 
         $response = $this->actingAs($user)
             ->post(route('stock.bulk-adjustment'), $adjustmentData);
 
-        $response->assertSessionHasErrors(['adjustments.0.new_stock']);
+        $response->assertRedirect(route('stock.overview'))
+            ->assertSessionHas('success', 'Penyesuaian stok massal berhasil dilakukan.');
+
+        // Check stock movement was created
+        $this->assertDatabaseHas('stock_movements', [
+            'product_id' => $product->id,
+            'type' => 'out',
+            'quantity' => 15, // 10 - (-5) = 15
+            'notes' => 'Allowing negative stock',
+        ]);
+
+        // Check product stock went negative
+        $product->refresh();
+        $this->assertEquals(-5, $product->current_stock);
     });
 
     it('manager can perform bulk stock adjustment', function () {

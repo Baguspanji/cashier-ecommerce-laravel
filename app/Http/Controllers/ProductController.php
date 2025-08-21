@@ -71,13 +71,6 @@ class ProductController extends Controller
         $productData = $data->toArray();
         $product = Product::create($productData);
 
-        // Generate barcode if not provided
-        if (empty($productData['barcode'])) {
-            $product->update([
-                'barcode' => $product->generateBarcode()
-            ]);
-        }
-
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
@@ -118,14 +111,7 @@ class ProductController extends Controller
     {
         Gate::authorize('manage_products');
 
-        $updateData = $data->toArray();
-
-        // Generate barcode if not provided and product doesn't have one
-        if (empty($updateData['barcode']) && empty($product->barcode)) {
-            $updateData['barcode'] = $product->generateBarcode();
-        }
-
-        $product->update($updateData);
+        $product->update($data->toArray());
 
         return redirect()->route('products.index')
             ->with('success', 'Produk berhasil diperbarui.');

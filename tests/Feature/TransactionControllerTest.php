@@ -20,6 +20,7 @@ it('can create a transaction through POS', function () {
         'barcode' => '1234567890123',
         'current_stock' => 10,
         'price' => 15000,
+        'price_purchase' => 10000, // Add purchase price for income calculation
         'is_active' => true,
     ]);
 
@@ -43,6 +44,7 @@ it('can create a transaction through POS', function () {
     $this->assertDatabaseHas('transactions', [
         'user_id' => $user->id,
         'total_amount' => 30000, // 2 * 15000
+        'income' => 10000, // 2 * (15000 - 10000)
         'payment_method' => PaymentMethod::Cash->value,
         'payment_amount' => 35000,
         'change_amount' => 5000,
@@ -54,6 +56,7 @@ it('can create a transaction through POS', function () {
         'product_id' => $product->id,
         'quantity' => 2,
         'unit_price' => 15000,
+        'price_purchase' => 10000,
         'subtotal' => 30000,
     ]);
 
@@ -72,6 +75,7 @@ it('can create a transaction with multiple items', function () {
         'barcode' => '1111111111111',
         'current_stock' => 10,
         'price' => 15000,
+        'price_purchase' => 8000,
         'is_active' => true,
     ]);
     $product2 = Product::factory()->create([
@@ -79,6 +83,7 @@ it('can create a transaction with multiple items', function () {
         'barcode' => '2222222222222',
         'current_stock' => 5,
         'price' => 25000,
+        'price_purchase' => 15000,
         'is_active' => true,
     ]);
 
@@ -106,6 +111,7 @@ it('can create a transaction with multiple items', function () {
     $this->assertDatabaseHas('transactions', [
         'user_id' => $user->id,
         'total_amount' => 55000, // (2 * 15000) + (1 * 25000)
+        'income' => 24000, // 2 * (15000 - 8000) + 1 * (25000 - 15000) = 14000 + 10000
         'payment_method' => PaymentMethod::DebitCard->value,
         'payment_amount' => 55000,
         'change_amount' => 0,
@@ -181,7 +187,7 @@ it('can access POS page with products including barcode', function () {
     );
 });
 
-it('shows only active products with stock in POS', function () {
+it('shows all active products in POS regardless of stock', function () {
     $user = User::factory()->create([
         'role' => UserRole::Cashier
     ]);
@@ -203,7 +209,7 @@ it('shows only active products with stock in POS', function () {
         'current_stock' => 10,
     ]);
 
-    // Out of stock product
+    // Out of stock product (but active)
     $outOfStockProduct = Product::factory()->create([
         'category_id' => $category->id,
         'barcode' => '3333333333333',
@@ -217,8 +223,9 @@ it('shows only active products with stock in POS', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('Transactions/POS')
-        ->has('products', 1) // Only active product with stock
+        ->has('products', 2) // Both active products (with and without stock)
         ->where('products.0.id', $activeProduct->id)
+        ->where('products.1.id', $outOfStockProduct->id)
     );
 });
 
@@ -320,7 +327,7 @@ it('validates insufficient payment amount', function () {
     $this->assertEquals(10, $product->current_stock);
 });
 
-it('validates insufficient stock', function () {
+it('allows transactions with insufficient stock', function () {
     $user = User::factory()->create([
         'role' => UserRole::Cashier
     ]);
@@ -347,14 +354,21 @@ it('validates insufficient stock', function () {
     $response = $this->actingAs($user)
         ->postJson(route('transactions.store'), $transactionData);
 
-    $response->assertServerError();
-    $this->assertDatabaseMissing('transactions', [
+    $response->assertRedirect();
+
+    // Transaction should be created successfully
+    $this->assertDatabaseHas('transactions', [
         'user_id' => $user->id,
+        'total_amount' => 75000, // 5 * 15000
+        'payment_method' => PaymentMethod::Cash->value,
+        'payment_amount' => 100000,
+        'change_amount' => 25000,
+        'status' => 'completed',
     ]);
 
-    // Stock should not be affected
+    // Stock should still be updated (can go negative)
     $product->refresh();
-    $this->assertEquals(1, $product->current_stock);
+    $this->assertEquals(-4, $product->current_stock); // 1 - 5 = -4
 });
 
 // Transaction Display Tests
