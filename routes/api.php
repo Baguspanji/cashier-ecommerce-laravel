@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TransactionSyncController;
 use Illuminate\Http\Request;
@@ -27,6 +28,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('products/search-barcode/{barcode}', [ProductApiController::class, 'searchByBarcode']);
     Route::patch('products/{product}/toggle-status', [ProductApiController::class, 'toggleStatus']);
     Route::apiResource('products', ProductApiController::class);
+
+    // Stock Management API - specific routes first
+    Route::get('stock/overview', [StockApiController::class, 'overview']);
+    Route::get('stock/alerts', [StockApiController::class, 'alerts']);
+    Route::get('stock/products/{product}/movements', [StockApiController::class, 'productMovements']);
+    Route::post('stock/bulk-adjustment', [StockApiController::class, 'bulkAdjustment']);
+    Route::get('stock', [StockApiController::class, 'index']);
+    Route::post('stock', [StockApiController::class, 'store']);
 });
 
 // Sync API routes - using auth:sanctum for API authentication
