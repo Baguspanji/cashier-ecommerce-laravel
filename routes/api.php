@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\SyncController;
 use App\Http\Controllers\Api\TransactionSyncController;
 use Illuminate\Http\Request;
@@ -7,6 +9,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// API CRUD routes - using auth:sanctum for API authentication
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Categories API
+    Route::apiResource('categories', CategoryApiController::class);
+
+    // Products API - specific routes first to avoid conflicts with resource routes
+    Route::get('products/search-barcode/{barcode}', [ProductApiController::class, 'searchByBarcode']);
+    Route::patch('products/{product}/toggle-status', [ProductApiController::class, 'toggleStatus']);
+    Route::apiResource('products', ProductApiController::class);
 });
 
 // Sync API routes - using auth:sanctum for API authentication
