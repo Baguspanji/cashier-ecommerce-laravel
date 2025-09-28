@@ -5,8 +5,8 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\StockApiController;
 use App\Http\Controllers\Api\SyncController;
+use App\Http\Controllers\Api\TransactionApiController;
 use App\Http\Controllers\Api\TransactionSyncController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public authentication routes
@@ -36,6 +36,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('stock/bulk-adjustment', [StockApiController::class, 'bulkAdjustment']);
     Route::get('stock', [StockApiController::class, 'index']);
     Route::post('stock', [StockApiController::class, 'store']);
+
+    // Transactions API - specific routes first
+    Route::get('transactions/daily-report', [TransactionApiController::class, 'dailyReport']);
+    Route::get('transactions/analytics', [TransactionApiController::class, 'analytics']);
+    Route::patch('transactions/{transaction}/cancel', [TransactionApiController::class, 'cancel']);
+    Route::get('transactions', [TransactionApiController::class, 'index']);
+    Route::post('transactions', [TransactionApiController::class, 'store']);
+    Route::get('transactions/{transaction}', [TransactionApiController::class, 'show']);
 });
 
 // Sync API routes - using auth:sanctum for API authentication
